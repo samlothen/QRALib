@@ -8,12 +8,12 @@ class Tornado:
 
     def __init__(self, risk_results):
         single_risk_impact_data, frequency_data = self._set_ale_stats(risk_results)
-        total_data = self._set_stats(risk_results,"total")
+        total_impact_data = self._set_stats(risk_results,"total")
         
         self.tornado_parameters = {
             "single_risk_impact" : single_risk_impact_data,
             "frequency" : frequency_data,
-            "total": total_data
+            "total": total_impact_data
         }
 
     def draw_ale(self): 
@@ -33,16 +33,20 @@ class Tornado:
         for i in range(len(risk_results["results"])):
             risk_id.append(risk_results["results"][i]["id"])
             mean_value.append(mean(risk_results["results"][i][attribute]))
-            percentile_95.append(np.percentile(risk_results["results"][i][attribute], 95))
-            percentile_5.append(np.percentile(risk_results["results"][i][attribute], 5))
+            percentile_95.append(
+                np.percentile(risk_results["results"][i][attribute], 95))
+            percentile_5.append(
+                np.percentile(risk_results["results"][i][attribute], 5))
 
 
         negative_variation = []
         positive_variation = []
         mean_sum = sum(mean_value)
         for i in range(0,len(mean_value),1):
-            negative_variation.append((sum(mean_value[:i])+percentile_5[i]+sum(mean_value[i+1:]))-mean_sum)
-            positive_variation.append((sum(mean_value[:i])+percentile_95[i]+sum(mean_value[i+1:]))-mean_sum)
+            negative_variation.append((
+                sum(mean_value[:i])+percentile_5[i]+sum(mean_value[i+1:]))-mean_sum)
+            positive_variation.append((
+                sum(mean_value[:i])+percentile_95[i]+sum(mean_value[i+1:]))-mean_sum)
 
         data = self._sorter(positive_variation, negative_variation, risk_id)
         return data
@@ -64,13 +68,20 @@ class Tornado:
         
         for i in range(len(risk_results["results"])):
             risk_id.append(risk_results["results"][i]["id"])
-            single_risk_impact_mean_value.append(mean(risk_results["results"][i]["single_risk_impact"]))
-            single_risk_impact_percentile_95.append(np.percentile(risk_results["results"][i]["single_risk_impact"], 95))
-            single_risk_impact_percentile_5.append(np.percentile(risk_results["results"][i]["single_risk_impact"], 5))
-            frequency_mean_value.append(mean(risk_results["results"][i]["frequency"]))
-            frequency_percentile_95.append(np.percentile(risk_results["results"][i]["frequency"], 95))
-            frequency_percentile_5.append(np.percentile(risk_results["results"][i]["frequency"], 5))
-            mean_value.append(mean(risk_results["results"][i]["single_risk_impact"]*risk_results["results"][i]["frequency"]))
+            single_risk_impact_mean_value.append(
+                mean(risk_results["results"][i]["single_risk_impact"]))
+            single_risk_impact_percentile_95.append(
+                np.percentile(risk_results["results"][i]["single_risk_impact"], 95))
+            single_risk_impact_percentile_5.append(
+                np.percentile(risk_results["results"][i]["single_risk_impact"], 5))
+            frequency_mean_value.append(
+                mean(risk_results["results"][i]["frequency"]))
+            frequency_percentile_95.append(
+                np.percentile(risk_results["results"][i]["frequency"], 95))
+            frequency_percentile_5.append(
+                np.percentile(risk_results["results"][i]["frequency"], 5))
+            mean_value.append(
+                mean(risk_results["results"][i]["single_risk_impact"]*risk_results["results"][i]["frequency"]))
 
         single_risk_impact_negative_variation = []
         single_risk_impact_positive_variation = []
@@ -163,4 +174,8 @@ class Tornado:
             name='Positive variation',
             orientation='h',
         ), 1, 2)
+        fig.update_layout(
+            title=attribute,
+            legend_title="Legend ",)       
+
         fig.show()

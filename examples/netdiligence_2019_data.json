@@ -1,0 +1,344 @@
+{"Risks":[
+    {"type":"Risk",
+        "name":"Education",
+        "ID":"R01",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 109,
+                "beta": 1973
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 2000,
+                "mean": 163000,
+                "high": 1500000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Energy",
+        "ID":"R02",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 21,
+                "beta": 2062
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 2000,
+                "mean": 319000,
+                "high": 5000000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Entertainment",
+        "ID":"R03",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 16,
+                "beta": 2067
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 7000,
+                "mean": 154000,
+                "high": 764000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Financial Services",
+        "ID":"R04",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 172,
+                "beta": 1911
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 1000,
+                "mean": 106000,
+                "high": 3400000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Gaming & Casino",
+        "ID":"R05",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 7,
+                "beta": 2076
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 76000,
+                "mean": 359000,
+                "high": 1100000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Healthcare",
+        "ID":"R06",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 383,
+                "beta": 1700
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 1000,
+                "mean": 182000,
+                "high": 9000000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Hospitality",
+        "ID":"R07",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 59,
+                "beta": 2024
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 6000,
+                "mean": 260000,
+                "high": 5700000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Manufacturing",
+        "ID":"R08",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 164,
+                "beta": 1914
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 2000,
+                "mean": 200000,
+                "high": 20000000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Media",
+        "ID":"R09",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 18,
+                "beta": 2065
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 5000,
+                "mean": 328000,
+                "high": 2500000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Nonprofit",
+        "ID":"R10",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 98,
+                "beta": 1985
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 1000,
+                "mean": 72000,
+                "high": 1600000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Professional Services",
+        "ID":"R11",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 445,
+                "beta": 1638
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 1000,
+                "mean": 90000,
+                "high": 3600000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Public Entity",
+        "ID":"R12",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 67,
+                "beta": 2016
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 3000,
+                "mean": 96000,
+                "high": 1400000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Restaurant",
+        "ID":"R13",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 18,
+                "beta": 2065
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 2000,
+                "mean": 68000,
+                "high": 367000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Retail",
+        "ID":"R14",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 182,
+                "beta": 1901
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 2000,
+                "mean": 240000,
+                "high": 7500000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Technology",
+        "ID":"R15",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 118,
+                "beta": 1965
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 5000,
+                "mean": 455000,
+                "high": 10000000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Telecommunications",
+        "ID":"R16",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 14,
+                "beta": 2069
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 4000,
+                "mean": 542000,
+                "high": 2000000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Transportation",
+        "ID":"R17",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 38,
+                "beta": 2045
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 5000,
+                "mean": 590000,
+                "high": 17500000
+            }
+        }
+    },
+    {"type":"Risk",
+        "name":"Other",
+        "ID":"R18",
+        "frequency":{
+            "distribution": "Beta",
+            "parameters":{
+                "alpha": 92,
+                "beta": 1991
+            }
+        },
+        "impact":{
+            "distribution":"PERT",
+            "parameters":{
+                "low": 1000,
+                "mean": 81000,
+                "high": 800000
+            }
+        }
+    }
+    ]}

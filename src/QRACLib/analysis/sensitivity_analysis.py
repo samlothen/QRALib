@@ -3,7 +3,7 @@ from SALib.sample import saltelli
 from SALib.analyze import sobol
 from SALib.analyze import morris 
 from SALib.sample.morris import sample as morris_sample
-from tabulate import tabulate
+import plotly.graph_objects as go
 
 class SensitivityAnalysis:
 
@@ -44,12 +44,35 @@ class SensitivityAnalysis:
 
         Y = np.sum(total_outcome, axis=0)
 
-        Si = morris.analyze(self.problem, param_values, Y, conf_level=0.95, print_to_console=True, num_levels=4, num_resamples=100)
+        Si = morris.analyze(self.problem, param_values, Y, conf_level=0.95, print_to_console=False, num_levels=4, num_resamples=100)
+        
+        names_sorted = self._sort_Si(Si, 'names', 'mu_star')[::-1]
+        mu_star_sorted = np.round(self._sort_Si(Si, 'mu_star', 'mu_star')[::-1], 4)
+        mu_star_conf_sorted = np.round(self._sort_Si(Si, 'mu_star_conf', 'mu_star')[::-1], 4)
+        sigma_sorted = np.round(self._sort_Si(Si, 'mu_star_conf', 'mu_star')[::-1], 4)
 
+        headers_list=['Parameter', 'mu_star', 'mu_star_conf', 'sigma']
 
-        self._horizontal_bar_plot(Si, {}, sortby='mu_star', unit=r"ALE")
+        fig = go.Figure(data=[go.Table(header=dict(values=headers_list,align='left'),
+                 cells=dict(values=[names_sorted, mu_star_sorted, mu_star_conf_sorted, sigma_sorted],align='left'))
+                     ])
+        fig.update_layout(title={
+                        'text': "Sensitivity Analysis Morris Method - Sorted after mu_star"},
+                        autosize=False,
+                        width=750,
+                        height=350,
+                        margin=dict(
+                            l=10,
+                            r=10,
+                            b=10,
+                            t=100,
+                            pad=4
+                        ))
+        fig.show()
 
-        return Si
+        #self._horizontal_bar_plot(Si, {}, sortby='mu_star', unit=r"ALE")
+
+        #return Si
 
     
     def sobol(self, number_of_samples: int):
@@ -63,19 +86,41 @@ class SensitivityAnalysis:
         Y = np.sum(total_outcome, axis=0)
 
         Si = sobol.analyze(self.problem, Y, calc_second_order=False,print_to_console=False)
-        
-        headers_list=['Parameter', 'S1', 'S1_conf', 'ST', 'ST_Conf']
-        tabs = []
-        for i in range(len(self.problem["names"])):
-            tabs.append([self.problem["names"][i],round(Si["S1"][i], 4), round(Si["S1_conf"][i], 4), round(Si["ST"][i], 4), round(Si["ST_conf"][i], 4)])
-        print(tabulate(tabs,headers=headers_list))
+        Si["names"] = self.problem["names"]
 
-        return Si
+        headers_list=['Parameter', 'S1', 'S1_conf', 'ST', 'ST_conf']
+
+        names_sorted = self._sort_Si(Si, 'names', 'S1')[::-1]
+        S1_sorted = np.round(self._sort_Si(Si, 'S1', 'S1')[::-1], 4)
+        S1_conf_sorted = np.round(self._sort_Si(Si, 'S1_conf', 'S1')[::-1], 4)
+        ST_sorted = np.round(self._sort_Si(Si, 'ST', 'S1')[::-1], 4)
+        ST_conf_sorted = np.round(self._sort_Si(Si, 'ST_conf', 'S1')[::-1], 4)
+
+        fig = go.Figure(data=[go.Table(header=dict(values=headers_list,align='left'),
+                 cells=dict(values=[names_sorted, S1_sorted, S1_conf_sorted, ST_sorted, ST_conf_sorted],align='left'))
+                     ])
+        fig.update_layout(title={
+                        'text': "Sobols' Idicies for ALE - Sorted after S1"},
+                        autosize=False,
+                        width=750,
+                        height=350,
+                        margin=dict(
+                            l=10,
+                            r=10,
+                            b=10,
+                            t=100,
+                            pad=4
+                        ))
+        fig.show()
+
+
+
+        #return Si
 
 
     def _horizontal_bar_plot(self, Si, param_dict, sortby='mu_star', unit=''):
 
-        import plotly.graph_objects as go
+
         assert sortby in ['mu_star', 'mu_star_conf', 'sigma', 'mu']
 
         # Sort all the plotted elements by mu_star (or optionally another

@@ -1,0 +1,115 @@
+{"Risks":[
+{"type":"Risk",
+    "name":"UniformPert",
+    "ID":"UP01",
+    "frequency":{
+        "distribution": "Uniform",
+        "parameters":{
+            "low": 0.113,
+            "high": 0.358
+        }
+    },
+    "impact":{
+        "distribution":"PERT",
+        "parameters":{
+            "low": 11295,
+            "mean": 110942,
+            "high": 7176269
+        }
+    }
+},
+{"type":"Risk",
+    "name":"UnifromLognormal",
+    "ID":"UL01",
+    "frequency":{
+        "distribution": "Uniform",
+        "parameters":{
+            "low": 0.152,
+            "high": 0.35
+        }
+    },
+    "impact":{
+        "distribution":"Lognormal",
+        "parameters":{
+            "low": 1160,
+            "high": 1514992
+        }
+    }
+},
+{"type":"Risk",
+    "name":"BetaLognormal",
+    "ID":"BL01",
+    "frequency":{
+        "distribution": "Beta",
+        "parameters":{
+            "alpha": 96,
+            "beta": 1099
+        }
+    },
+    "impact":{
+        "distribution":"Lognormal",
+        "parameters":{
+            "low": 408,
+            "high": 52007
+        }
+    }
+},
+{"type":"Risk",
+    "name":"PertLognormal",
+    "ID":"PL01",
+    "frequency":{
+        "distribution": "PERT",
+        "parameters":{
+            "low": 0.082,
+            "mean": 0.462,
+            "high": 1.595
+        }
+    },
+    "impact":{
+        "distribution":"Lognormal",
+        "parameters":{
+            "low": 8823,
+            "high": 474458
+        }
+    }
+},
+{"type":"BP01",
+    "name":"BetaPert",
+    "ID":"R05",
+    "frequency":{
+        "distribution": "Beta",
+        "parameters":{
+            "alpha": 221,
+            "beta": 649
+        }
+    },
+    "impact":{
+        "distribution": "PERT",
+        "parameters":{
+            "low": 632,
+            "mean": 167060,
+            "high": 6864794
+        }
+    }
+},
+{"type":"Risk",
+    "name":"PertPert",
+    "ID":"PP01",
+    "frequency":{
+        "distribution": "PERT",
+        "parameters":{
+            "low": 0.248,
+            "mean": 0.634,
+            "high": 1.305
+        }
+    },
+    "impact":{
+        "distribution": "PERT",
+        "parameters":{
+            "low": 4014,
+            "mean": 94564,
+            "high": 9809333
+        }
+    }
+}
+]}

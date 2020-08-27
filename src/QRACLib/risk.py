@@ -3,8 +3,8 @@
 * name = A descriptive name for the scenario
 * frequency_model = Probability distribtuion for it occuring
 * frequency_group = String for frequency model used
-* magnitude_model = Probability distribtuion for impact
-* magnitude_group = String for magnitude model used
+* impact_group = Probability distribtuion for impact
+* impact_model = String for magnitude model used
 """
 
 class Risk:

@@ -15,7 +15,7 @@ The impact exceedance graph visualizes the combined risk impact.
 
 import numpy as np
 import plotly.graph_objects as go
-import plotly.express as px
+from plotly.subplots import make_subplots
 import itertools
 
 class MaRiQ:
@@ -59,38 +59,92 @@ class MaRiQ:
 
         
     def single_risk_analysis(self, top_number=10):
+        single_risk_analysis_fig = make_subplots(
+            rows=2, 
+            cols=2,
+            specs=[
+                [{"type": "scatter"}, {"type": "box"}],
+                [{"type": "table"}, {"type": "table"}]],
+           subplot_titles=("Heatmap", "Uncertainty", "Top 10 Risks", "Estimated Risks"))
+        
+        if top_number > self.no_risks:
+            top_number = self.no_risks
+        
         # Uncertainty - box plot of impact
         uncertainty_ids_sorted = self._sort_data('id', 'mean_expected_loss')[::-1]
         uncertainty_data = self._sort_data('impact', 'mean_expected_loss')[::-1]
-        uncertainty_fig = go.Figure()
-        for i in range(0,top_number,1):
-           uncertainty_fig.add_trace(go.Box(y=uncertainty_data[i], name=uncertainty_ids_sorted[i]))
-        uncertainty_fig.show()
 
+        for i in range(0,top_number,1):
+            single_risk_analysis_fig.add_trace(go.Box(y=uncertainty_data[i], name=uncertainty_ids_sorted[i]),
+                row=1, col=2)
+        
 
         # Heatmap - mean likelihood + mean impact
         heatmap_ids = self._sort_data('id', 'mean_expected_loss')[::-1]
         heatmap_frequency = self._sort_data('mean_frequency', 'mean_expected_loss')[::-1]
         heatmap_impact = self._sort_data('mean_impact', 'mean_expected_loss')[::-1]
-
-        heatmap_fig = px.scatter(x=heatmap_frequency[:top_number], y=heatmap_impact[:top_number], text=heatmap_ids[:top_number])
-        heatmap_fig.show()
         
+        single_risk_analysis_fig.add_trace(
+            go.Scatter(
+                x=heatmap_frequency[:top_number], 
+                y=heatmap_impact[:top_number], 
+                text=heatmap_ids[:top_number],
+                name='',
+                mode='markers'),
+                row=1, col=1)
+
         # Top 10 Risks - mean expected loss
         top10_ids = self._sort_data('id', 'mean_expected_loss')[::-1]
         top10_mean_expected_loss = self._sort_data('mean_expected_loss', 'mean_expected_loss')[::-1]
-        top10_fig = go.Figure(data=[go.Table(header=dict(values=['Risk ID', 'Risk Level'], align='left'),
-                 cells=dict(values=[top10_ids[:10], top10_mean_expected_loss[:10]], align='left'))
-                     ])
-        top10_fig.show()
+
+        single_risk_analysis_fig.add_trace(
+            go.Table(
+                columnwidth = [50,50],
+                header=dict(values=['Risk ID', 'Risk Level'],
+                align='left'),
+                cells=dict(
+                    values=[top10_ids[:top_number], top10_mean_expected_loss[:top_number]], 
+                align='left')), 
+                row=2, col=1)
+
 
         # Estimated risks -  mean expected loss
         risk_list_ids = self._sort_data('id', 'id')
         risk_list_mean_expected_loss = self._sort_data('mean_expected_loss', 'id')
-        risk_list_fig = go.Figure(data=[go.Table(header=dict(values=['Risk ID', 'Risk Level'], align='left'),
-                 cells=dict(values=[risk_list_ids, risk_list_mean_expected_loss], align='left'))
-                     ])
-        risk_list_fig.show()
+
+        single_risk_analysis_fig.add_trace(
+            go.Table(
+                columnwidth = [50,50],
+                header=dict(values=['Risk ID', 'Risk Level'],
+                align='left'),
+                cells=dict(
+                    values=[risk_list_ids, risk_list_mean_expected_loss], 
+                align='left')), 
+                row=2, col=2)
+
+
+
+
+        single_risk_analysis_fig.update_xaxes(title_text="Frequency", tickformat=".2%", row=1, col=1)
+        single_risk_analysis_fig.update_yaxes(title_text="Impact", row=1, col=1)
+
+        single_risk_analysis_fig.update_yaxes(title_text="Impact", row=1, col=2)
+
+        single_risk_analysis_fig.update_layout(title={
+                                'text': 'MaRiQ Results Single Risk'},
+                                autosize=False,
+                                width=1000,
+                                height=750,
+                                margin=dict(
+                                    l=50,
+                                    r=50,
+                                    b=50,
+                                    t=100,
+                                    pad=4
+                                ))
+
+        single_risk_analysis_fig.show()
+
 
     
     def _sort_data(self, key, sortby):
@@ -126,6 +180,15 @@ class MaRiQ:
         fig.add_trace(go.Scatter(x=self.total_risk_tolerance[0], y=trt,
                             mode='lines+markers',
                             line_color='blue',
-                            name='Tolerance'))                   
+                            name='Tolerance'))
+       
+        fig.update_layout(title={
+                                'text': "Impact Exceedance Curve",
+                                'y':0.9,
+                                'x':0.5,
+                                'xanchor': 'center',
+                                'yanchor': 'top'},
+                        xaxis_title="Impact",
+                        yaxis_title="Impact exceedance probability")                 
         fig.show()
 
