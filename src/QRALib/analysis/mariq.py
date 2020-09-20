@@ -175,11 +175,11 @@ class MaRiQ:
         fig.layout = go.Layout(yaxis=dict(tickformat=".2%"))
         fig.add_trace(go.Scatter(x=risk_buckets, y=total_risk,
                             mode='lines',
-                            line_color='red',
+                            line_color='blue',
                             name='Total Risk'))
         fig.add_trace(go.Scatter(x=self.total_risk_tolerance[0], y=trt,
                             mode='lines+markers',
-                            line_color='blue',
+                            line_color='red',
                             name='Tolerance'))
        
         fig.update_layout(title={

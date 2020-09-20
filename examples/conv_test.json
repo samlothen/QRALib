@@ -1,0 +1,20 @@
+{"Risks":[
+{"type":"Risk",
+    "name":"UniformPert",
+    "ID":"UP01",
+    "frequency":{
+        "distribution": "Uniform",
+        "parameters":{
+            "low": 0.1,
+            "high": 0.3
+        }
+    },
+    "impact":{
+        "distribution":"Lognormal",
+        "parameters":{
+            "low": 100,
+            "high": 1000
+        }
+    }
+}
+]}

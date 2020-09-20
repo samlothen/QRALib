@@ -1,4 +1,4 @@
-Quantitative Risk Analysis in Cybersecurity Library (QRACLib)
+Quantitative Risk Analysis in Cybersecurity Library (QRALib)
 =============================================================
 
 Python implementations to perform quantitative risk analysis. The
@@ -36,7 +36,7 @@ to use distributions, simulations, and analysis as needed.
 
 ::
 
-   QRACLib
+   QRALib
    ├── Risk Portfolio
    ├── risk
    ├── analysis
@@ -157,7 +157,7 @@ values.
 Simulation methods
 ------------------
 
-QRACLib implements several simulation methods and is designed to be
+QRALib implements several simulation methods and is designed to be
 extended with new ones.
 
 Currently, three types of Monte Carlo Methods are supported:
@@ -310,7 +310,7 @@ output the most or verify interaction effects within the model. This can
 help to understand and verify the model or simplify and prioritize
 factors that affect the model the least and most, respectively.
 
-QRACLib implements three different Sensitivity Analysis methods: -
+QRALib implements three different Sensitivity Analysis methods: -
 Tornado Chart - Method of Morris - Sobol’s indices
 
 Tornado Chart
@@ -359,7 +359,7 @@ Sobol’ indices are a variance-based method that is capable of computing
 sensitivity for arbitrary groups of factors. Sobol’s method compute
 three indices, first-order sensitivity index S_1, second-order
 sensitivity index S_2, and total sensitivity index S_T. The current
-implementation in QRACLib does not implement second-order sensitivity
+implementation in QRALib does not implement second-order sensitivity
 index S_2.
 
 The first-order index (S_1) shows the effect of each input on the total.
@@ -373,7 +373,7 @@ interactions, of any order, with any other input variables.
 Utilities
 ---------
 
-QRACLib provides utilities to help with certain tasks. Currently, it
+QRALib provides utilities to help with certain tasks. Currently, it
 implements the tools to import data from a CSV or nested JSON.
 
 Examples are provided in the example folder.
@@ -393,11 +393,11 @@ Run simulation 5. Run analysis 6. Run sensitivity analysis
 
 ::
 
-   from QRACLib.riskportfolio import RiskPortfolio as Risks
-   from QRACLib.simulation.mcs import MonteCarloSimulation as mcs
-   from QRACLib.analysis.mariq import MaRiQ as mariq
-   from QRACLib.analysis.sa import SensitivityAnalysis as sensitivity_analysis
-   from QRACLib.utils.importer import Importer as importer
+   from QRALib.riskportfolio import RiskPortfolio as Risks
+   from QRALib.simulation.mcs import MonteCarloSimulation as mcs
+   from QRALib.analysis.mariq import MaRiQ as mariq
+   from QRALib.analysis.sa import SensitivityAnalysis as sensitivity_analysis
+   from QRALib.utils.importer import Importer as importer
 
    # Setup parameters
    number_of_iterations = 10000

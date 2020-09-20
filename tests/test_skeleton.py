@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from qraclib.skeleton import fib
+from QRALib.skeleton import fib
 
 __author__ = "Sam"
 __copyright__ = "Sam"

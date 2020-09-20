@@ -75,7 +75,7 @@
 },
 {"type":"BP01",
     "name":"BetaPert",
-    "ID":"R05",
+    "ID":"BP01",
     "frequency":{
         "distribution": "Beta",
         "parameters":{

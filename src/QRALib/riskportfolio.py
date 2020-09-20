@@ -1,8 +1,8 @@
-from QRACLib.distribution.lognormal import Lognormal
-from QRACLib.distribution.pert import PERT
-from QRACLib.distribution.uniform import Uniform
-from QRACLib.distribution.beta import Beta
-from QRACLib.risk import Risk as Risk
+from QRALib.distribution.lognormal import Lognormal
+from QRALib.distribution.pert import PERT
+from QRALib.distribution.uniform import Uniform
+from QRALib.distribution.beta import Beta
+from QRALib.risk import Risk as Risk
 
 class RiskPortfolio:
     """Risk Model"""

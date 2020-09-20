@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Setup file for qraclib.
+    Setup file for QRALib.
     Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 3.2.3.
@@ -12,7 +12,7 @@ import sys
 from pkg_resources import VersionConflict, require
 from setuptools import setup
 
-scripts = ['src/QRACLib/scripts/qraclib.py']
+scripts = ['src/QRALib/scripts/QRALib.py']
 try:
     require('setuptools>=38.3')
 except VersionConflict:
