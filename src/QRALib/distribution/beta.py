@@ -1,6 +1,7 @@
 """A model based on the beta distribution to produce probability modelling
 """
 from scipy.stats import beta as beta_dist
+import numpy as np
 
 class Beta:
     def __init__(self, alpha: float, beta: float) -> None:
