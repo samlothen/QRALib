@@ -9,16 +9,8 @@ class Beta:
 
         Alpha and Beta must be bigger than 0.
         """
-        self.alpha = alpha
-        self.beta = beta
-        self._parameters(alpha, beta)
-
-    def _parameters(self, alpha, beta):
-        if alpha <= 0:
-            raise AssertionError("Alpha must be greater than 0")
-        if beta <= 0:
-            raise AssertionError("Beta must be greater than 0")
-
+        if alpha <= 0 or beta <= 0:
+            raise AssertionError("Alpha and Beta must be greater than 0")
         self.distribution = beta_dist(alpha, beta)   
 
     def draw(self, n=1):
