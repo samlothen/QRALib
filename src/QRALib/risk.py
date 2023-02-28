@@ -1,18 +1,26 @@
-"""Container for risk event
-* ID = An identifier for the scenario
-* name = A descriptive name for the scenario
-* frequency_model = Probability distribtuion for it occuring
-* frequency_group = String for frequency model used
-* impact_group = Probability distribtuion for impact
-* impact_model = String for magnitude model used
-"""
+"""Container for risk event"""
+import numpy as np
 
 class Risk:
     """Risk Model"""
 
-    def __init__(self, uniq_id, name, frequency_dist, frequency_model, impact_dist, impact_model):
-
-        """Initialize impact and frequency paramters"""
+    def __init__(self, uniq_id, name: str, frequency_dist: str, frequency_model, impact_dist: str, impact_model) -> None:
+        """
+        Initializes impact and frequency parameters for the risk event.
+        
+        Parameters:
+        ----------
+        uniq_id : str
+            An uniqe identifier for the risk.
+        name : str
+            A descriptive name for the risk.
+        frequency_group : str
+            The name of the frequency distribution used.
+        frequency_model : Probability distribution object used for the frequency of the risk.
+        impact_group : str
+            The name of the impact distribution used.
+        impact_model : Probability distribution object used for the impact of the risk.
+        """
         self.uniq_id = uniq_id
         self.name = name
         self.frequency_group = frequency_dist
@@ -20,14 +28,82 @@ class Risk:
         self.impact_group = impact_dist
         self.impact_model = impact_model
 
-    def get_impact(self, n):
+    def get_impact(self, n: int) -> np.ndarray:
+        """
+        Returns an array of n random samples drawn from the impact distribution.
+        
+        Parameters:
+        ----------
+        n : int
+            The number of samples to generate.
+            
+        Returns:
+        -------
+        np.ndarray
+            An array of n random samples drawn from the impact distribution.
+        Raises:
+            ValueError: If n is not positive.
+        """
+        if n <= 0:
+            raise ValueError("n must be a positive integer.")
         return self.impact_model.draw(n)
 
-    def get_frequency(self,n):
+    def get_frequency(self, n: int = 1) -> np.ndarray:
+        """
+        Returns an array of n random samples drawn from the frequency distribution.
+        
+        Parameters:
+        ----------
+        n : int
+            The number of samples to generate.
+            
+        Returns:
+        -------
+        np.ndarray
+            An array of n random samples drawn from the frequency distribution.
+        Raises:
+            ValueError: If n is not positive.
+        """
+        if n <= 0:
+            raise ValueError("n must be a positive integer.")
         return self.frequency_model.draw(n)
 
-    def get_impact_ppf(self, n):
+    def get_impact_ppf(self, n: int = 1) -> np.ndarray:
+        """
+        Returns an array of n samples drawn from the impact distribution using the percent point function.
+        
+        Parameters:
+        ----------
+        n : int
+            The number of samples to generate.
+            
+        Returns:
+        -------
+        np.ndarray
+            An array of n samples drawn from the impact distribution using the percent point function.
+        Raises:
+            ValueError: If n is not positive.
+        """
+        if n <= 0:
+            raise ValueError("n must be a positive integer.")
         return self.impact_model.draw_ppf(n)
 
-    def get_frequency_ppf(self,n):
+    def get_frequency_ppf(self, n: int = 1) -> np.ndarray:
+        """
+        Returns an array of n samples drawn from the frequency distribution using the percent point function.
+        
+        Parameters:
+        ----------
+        n : int
+            The number of samples to generate.
+            
+        Returns:
+        -------
+        np.ndarray
+            An array of n samples drawn from the frequency distribution using the percent point function.
+        Raises:
+            ValueError: If n is not positive.
+        """
+        if n <= 0:
+            raise ValueError("n must be a positive integer.")
         return self.frequency_model.draw_ppf(n)
