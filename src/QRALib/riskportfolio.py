@@ -1,8 +1,14 @@
-from QRALib.distribution.lognormal import Lognormal
-from QRALib.distribution.pert import PERT
-from QRALib.distribution.uniform import Uniform
-from QRALib.distribution.beta import Beta
-from QRALib.risk import Risk as Risk
+from .distributions import lognormal as Lognormal
+from .distributions import pert as PERT
+from .distributions import uniform as Uniform
+from .distributions import beta as Beta
+from .risk import Risk as Risk
+
+"""
+Note:
+_model object is the object that gets created when calling the various distributions  
+
+"""
 
 class RiskPortfolio:
     """Risk Model"""
