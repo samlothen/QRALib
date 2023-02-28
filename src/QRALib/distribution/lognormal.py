@@ -7,15 +7,24 @@ from scipy.stats import lognorm
 
 class Lognormal:
     def __init__(self, low_bound: float, up_bound: float):
-        """:param  low_bound = Low bound estimate
-        :param up_bound = Upper bound estimate
-
+        """
+        :param low_bound: Lower bound estimate
+        :type low_bound: float
+        :param up_bound: Upper bound estimate
+        :type up_bound: float
+    
         The range low_bound -> up_bound should represent the 90% confidence interval
         that the loss will fall in that range.
-
+    
         These values are then fit to a lognormal distribution so that they fall at the 5% and
         95% cumulative probability points.
         """
+        if not isinstance(low_bound, float):
+            raise TypeError("low_bound must be a float")
+        if not isinstance(up_bound, float):
+            raise TypeError("up_bound must be a float")
+        if low_bound >= up_bound:
+            raise ValueError("up_bound must exceed low_bound")
         self.low_bound = low_bound
         self.up_bound = up_bound
         self._parameters(low_bound, up_bound)
