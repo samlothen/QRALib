@@ -3,33 +3,51 @@
 from scipy.stats import beta as beta_dist
 
 class Beta:
-    def __init__(self, alpha: float, beta: float):
-        """:param  alpha = Number of "hit" samples  
-        :param beta = Number of "miss" samples
+    def __init__(self, alpha: float, beta: float) -> None:
+        """
+        Create a beta distribution with given alpha and beta parameters.
 
-        Alpha and Beta must be bigger than 0.
+        :param alpha: Number of "hit" samples
+        :type alpha: float
+        :param beta: Number of "miss" samples
+        :type beta: float
+        :raises ValueError: If alpha or beta is not greater than 0.
         """
         if alpha <= 0 or beta <= 0:
-            raise AssertionError("Alpha and Beta must be greater than 0")
-        self.distribution = beta_dist(alpha, beta)   
+            raise ValueError("Alpha and Beta must be greater than 0")
+        self.distribution = beta_dist(alpha, beta)
 
-    def draw(self, n=1):
-        """:param  n = Number of samples to return
-        :return: array of size n with random values from distribtuion 
+    def draw(self, n: int = 1) -> np.ndarray:
+        """
+        Draw random samples from the beta distribution.
+
+        :param n: Number of samples to return
+        :type n: int
+        :return: Array of size n with random values from the distribution
         :rtype: numpy.ndarray
         """
+        if not isinstance(n, int) or n <= 0:
+            raise ValueError("n must be a positive integer")
         return self.distribution.rvs(size=n)
 
-    def draw_ppf(self, percentile_sequences):
-        """:param  percentile_sequences = list of numbers in range [0,1]
-        :return: array of same size as inpu with values from the distribtuions
-        percent point function. 
+    def draw_ppf(self, percentile_sequences: np.ndarray) -> np.ndarray:
+        """
+        Generate samples from the beta distribution using the percent point function (PPF).
+
+        :param percentile_sequences: Array of numbers in the range [0, 1]
+        :type percentile_sequences: numpy.ndarray
+        :return: Array of the same size as the input with values from the distribution PPF
         :rtype: numpy.ndarray
         """
+        if not isinstance(percentile_sequences, np.ndarray) or not np.issubdtype(percentile_sequences.dtype, np.number) or not (0 <= percentile_sequences).all() or not (percentile_sequences <= 1).all():
+            raise ValueError("percentile_sequences must be a numpy array of numbers in the range [0, 1]")
         return self.distribution.ppf(percentile_sequences)
     
-    def mean(self):
-        """:return: mean value of the distribution
-        :rtype: numpy.float64
+    def mean(self) -> float:
+        """
+        Calculate the mean value of the beta distribution.
+
+        :return: Mean value of the distribution
+        :rtype: float
         """
         return self.distribution.mean()
