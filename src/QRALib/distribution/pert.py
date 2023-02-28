@@ -40,7 +40,7 @@ class PERT:
 
         self.distribution = beta_dist(self.alpha, self.beta, loc=self.location, scale=self.scale)
 
-    def sample(self, n: int = 1) -> np.ndarray:
+    def draw(self, n: int = 1) -> np.ndarray:
         """
         Generate random samples from the Beta-PERT distribution.
 
@@ -53,7 +53,7 @@ class PERT:
             raise ValueError("n must be a positive integer")
         return self.distribution.rvs(size=n)
 
-    def sample_ppf(self, percentile_sequences: np.ndarray) -> np.ndarray:
+    def draw_ppf(self, percentile_sequences: np.ndarray) -> np.ndarray:
         """
         Generate samples from the Beta-PERT distribution using the percent point function (PPF).
 
@@ -62,7 +62,7 @@ class PERT:
         :return: Array of the same size as the input with values from the distribution PPF
         :rtype: numpy.ndarray
         """
-        if not isinstance(percentile_sequences, np.ndarray) or not np.issubdtype(percentile_sequences.dtype, np.number) or not (0 <= percentile_sequences).all() or not (percentile_sequences < 1).all():
+        if not isinstance(percentile_sequences, np.ndarray) or not np.issubdtype(percentile_sequences.dtype, np.number) or not (0 <= percentile_sequences).all() or not (percentile_sequences <= 1).all():
             raise ValueError("percentile_sequences must be a numpy array of numbers in the range [0, 1)")
         return self.distribution.ppf(percentile_sequences)
 
