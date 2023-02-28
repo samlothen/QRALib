@@ -1,7 +1,7 @@
-from QRALib.distribution.lognormal import Lognormal
-from QRALib.distribution.pert import PERT
-from QRALib.distribution.uniform import Uniform
-from QRALib.distribution.beta import Beta
+from QRALib.distributions.lognormal import Lognormal
+from QRALib.distributions.pert import PERT
+from QRALib.distributions.uniform import Uniform
+from QRALib.distributions.beta import Beta
 from QRALib.risk import Risk as Risk
 
 class RiskPortfolio:
@@ -12,9 +12,9 @@ class RiskPortfolio:
         self.instances = []
 
         for risk in risk_dict["Risks"]:
-            uniq_id, name, frequency_dist, frequency_model, impact_dist, impact_model = self._from_dict(risk)
+            uniq_id, name, frequency_distribution, frequency_parameters, impact_distribution, impact_parameters = self._from_dict(risk)
             
-            self.instances.append(Risk(uniq_id, name, frequency_dist, frequency_model, impact_dist, impact_model))
+            self.instances.append(Risk(uniq_id, name, frequency_distribution, frequency_parameters, impact_distribution, impact_parameters))
     
     def listing(self):
         return self.instances
@@ -29,10 +29,10 @@ class RiskPortfolio:
         risk = {
             "id" : self.instances[risk_no].uniq_id,
             "name" : self.instances[risk_no].name,
-            "frequency_distribution" : self.instances[risk_no].frequency_group,
-            "frequency_parameters" : self.instances[risk_no].frequency_model.__dict__,
-            "impact_distribution" : self.instances[risk_no].impact_group,
-            "impact_parameters" : self.instances[risk_no].impact_model.__dict__
+            "frequency_distribution" : self.instances[risk_no].frequency_distribution,
+            "frequency_parameters" : self.instances[risk_no].frequency_parameters.__dict__,
+            "impact_distribution" : self.instances[risk_no].impact_distribution,
+            "impact_parameters" : self.instances[risk_no].impact_parameters.__dict__
         }
         del risk["frequency_parameters"]["distribution"]
         del risk["impact_parameters"]["distribution"]
@@ -44,12 +44,12 @@ class RiskPortfolio:
         self.risk_ids.append(uniq_id)
         name = risk_dict['name']
     
-        frequency_dist = risk_dict['frequency']['distribution']
-        frequency_model = self._setup_dist(risk_dict, frequency_dist, 'frequency')
-        impact_dist = risk_dict['impact']['distribution']
-        impact_model = self._setup_dist(risk_dict, impact_dist, 'impact')
+        frequency_distribution = risk_dict['frequency']['distribution']
+        frequency_parameters = self._setup_dist(risk_dict, frequency_distribution, 'frequency')
+        impact_distribution = risk_dict['impact']['distribution']
+        impact_parameters = self._setup_dist(risk_dict, impact_distribution, 'impact')
 
-        return uniq_id, name, frequency_dist, frequency_model, impact_dist, impact_model
+        return uniq_id, name, frequency_distribution, frequency_parameters, impact_distribution, impact_parameters
     
     @staticmethod 
     def _setup_dist(risk_dict, distribution: str, attribute: str):
