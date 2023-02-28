@@ -1,9 +1,8 @@
 """A model based on the lognormal distribution define by a 90% confidence interval
 """
 import math
-
-from scipy.stats import norm
-from scipy.stats import lognorm
+import numpy as np
+from scipy.stats import norm, lognorm
 
 class Lognormal:
     def __init__(self, low_bound: float, up_bound: float):
@@ -46,17 +45,18 @@ class Lognormal:
         self.distribution = lognorm(self.sigma, scale=math.exp(self.mu))
 
 
-    def draw(self, n=1):
+    def draw(self, n: int = 1) -> np.ndarray:
         """
         Generate random samples from the Lognormal distribution.
 
         :param n: Number of samples to return
         :type n: int
         :return: Array of size n with random values from distribution
+        :rtype: numpy.ndarray
         """
         return self.distribution.rvs(size=n)
 
-    def draw_ppf(self, percentile_sequences):
+    def draw_ppf(self, percentile_sequences) -> np.ndarray:
         """
         Generate samples from the Lognormal distribution using the percent point function (PPF).
 
@@ -67,10 +67,11 @@ class Lognormal:
         """
         return self.distribution.ppf(percentile_sequences)
 
-    def mean(self):
+    def mean(self) -> np.float64:
         """
         Calculate the mean value of the Lognormal distribution.
 
         :return: Mean value of the distribution
+        :rtype: numpy.float64
         """
         return self.distribution.mean()
