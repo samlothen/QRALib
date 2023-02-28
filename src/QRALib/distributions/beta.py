@@ -44,7 +44,7 @@ class Beta:
             raise ValueError("percentile_sequences must be a numpy array of numbers in the range [0, 1]")
         return self.distribution.ppf(percentile_sequences)
     
-    def mean(self) -> float:
+    def mean(self) -> np.float64:
         """
         Calculate the mean value of the beta distribution.
 
