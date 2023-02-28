@@ -3,6 +3,7 @@
 import math
 import numpy as np
 from scipy.stats import norm, lognorm
+from typing import Optional
 
 class Lognormal:
     def __init__(self, low_bound: float, up_bound: float) -> None:
@@ -73,7 +74,7 @@ class Lognormal:
     def mean(self, round_to: Optional[int] = None) -> np.float64:
         """
         Calculate the mean value of the Lognormal distribution.
-    
+
         :param round_to: Number of decimal places to round the mean value to
         :type round_to: int or None
         :return: Mean value of the distribution

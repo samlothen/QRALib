@@ -1,4 +1,6 @@
 from scipy.stats import beta as beta_dist
+import numpy as np
+from typing import Optional
 
 class PERT:
     """
