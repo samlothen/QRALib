@@ -10,21 +10,21 @@ class PERT:
         The range minimum -> maximum should represent the 90% confidence interval
         that the loss will fall in that range.
         """
-        self.min = minimum
-        self.mid = mid
-        self.max = maximum
-        self._parameters(minimum, mid, maximum)
-
-    def _parameters(self, minimum, mid, maximum):
-        """:param frequency = Mean rate per interval"""
         if minimum >= maximum:
             raise AssertionError("Min frequency must exceed max frequency. Min:", minimum, "Max:", maximum)
         if not minimum <= mid <= maximum:
             raise AssertionError("Mean should be between min and max frequencies. Min:", minimum, "Mean:",mid, "Max:", maximum)
-        self.alpha = (1 + (4 * (mid - minimum) / (maximum - minimum) ) )
-        self.beta = (1 + (4 * (maximum - mid) / (maximum - minimum) ) )
-        self.location = minimum
-        self.scale = maximum - minimum
+        self.min = minimum
+        self.mid = mid
+        self.max = maximum
+        self._parameters()
+
+    def _parameters(self):
+        """:param frequency = Mean rate per interval"""
+        self.alpha = (1 + (4 * (self.mid - self.minimum) / (self.maximum - self.minimum) ) )
+        self.beta = (1 + (4 * (self.maximum - self.mid) / (self.maximum - self.minimum) ) )
+        self.location = self.minimum
+        self.scale = self.maximum - self.minimum
         
         self.distribution = beta_dist(self.alpha, self.beta, loc=self.location, scale=self.scale)
         
