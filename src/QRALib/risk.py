@@ -44,8 +44,7 @@ class Risk:
         Raises:
             ValueError: If n is not positive.
         """
-        if n <= 0:
-            raise ValueError("n must be a positive integer.")
+
         return self.impact_model.draw(n)
 
     def get_frequency(self, n: int = 1) -> np.ndarray:
@@ -64,8 +63,7 @@ class Risk:
         Raises:
             ValueError: If n is not positive.
         """
-        if n <= 0:
-            raise ValueError("n must be a positive integer.")
+
         return self.frequency_model.draw(n)
 
     def get_impact_ppf(self, n: int = 1) -> np.ndarray:
@@ -84,8 +82,7 @@ class Risk:
         Raises:
             ValueError: If n is not positive.
         """
-        if n <= 0:
-            raise ValueError("n must be a positive integer.")
+
         return self.impact_model.draw_ppf(n)
 
     def get_frequency_ppf(self, n: int = 1) -> np.ndarray:
@@ -104,6 +101,5 @@ class Risk:
         Raises:
             ValueError: If n is not positive.
         """
-        if n <= 0:
-            raise ValueError("n must be a positive integer.")
+
         return self.frequency_model.draw_ppf(n)
