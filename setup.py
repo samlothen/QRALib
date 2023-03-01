@@ -1,24 +1,19 @@
-# -*- coding: utf-8 -*-
-"""
-    Setup file for QRALib.
-    Use setup.cfg to configure your project.
-
-    This file was generated with PyScaffold 3.2.3.
-    PyScaffold helps you to put up the scaffold of your new Python project.
-    Learn more under: https://pyscaffold.org/
-"""
-import sys
-
-from pkg_resources import VersionConflict, require
 from setuptools import setup
 
-scripts = ['src/QRALib/scripts/QRALib.py']
-try:
-    require('setuptools>=38.3')
-except VersionConflict:
-    print("Error: version of setuptools is too old (<38.3)!")
-    sys.exit(1)
-
-
-if __name__ == "__main__":
-    setup(use_pyscaffold=True)
+setup(name='QRALib',
+      version='0.3',
+      description='Description ',
+      url='https://github.com/samlothen/QRALib',
+      author='Sam Löthén',
+      author_email='sam@lothen.se',
+      license='GNUv3',
+      packages=['QRALib'],
+      install_requires=[
+          'numpy',
+          'joblib',
+          'torch',
+          'typing',
+          'plotly',
+          'SALib'
+      ],
+      zip_safe=False)
