@@ -54,8 +54,7 @@ class Lognormal:
         :return: Array of size n with random values from distribution
         :rtype: numpy.ndarray
         """
-        if not isinstance(n, int) or n <= 0:
-            raise ValueError("n must be a positive integer")
+
         return lognorm.rvs(self.sigma, scale=np.exp(self.mu), size=n)
 
     def draw_ppf(self, percentile_sequences: np.ndarray) -> np.ndarray:

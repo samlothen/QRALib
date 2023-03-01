@@ -49,8 +49,7 @@ class PERT:
         :return: Array of size n with random values from the distribution.
         :rtype: numpy.ndarray
         """
-        if not isinstance(n, int) or n <= 0:
-            raise ValueError("n must be a positive integer")
+
         return self.distribution.rvs(size=n)
 
     def draw_ppf(self, percentile_sequences: np.ndarray) -> np.ndarray:
