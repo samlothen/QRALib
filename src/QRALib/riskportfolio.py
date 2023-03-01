@@ -1,8 +1,8 @@
-from .distributions import lognormal as Lognormal
-from .distributions import pert as PERT
-from .distributions import uniform as Uniform
-from .distributions import beta as Beta
-from .risk import Risk as Risk
+from QRALib.distributions.lognormal import Lognormal
+from QRALib.distributions.pert import PERT
+from QRALib.distributions.uniform import Uniform 
+from QRALib.distributions.beta import Beta
+from QRALib.risk import Risk
 
 
 class RiskPortfolio:
@@ -150,14 +150,14 @@ class RiskPortfolio:
             If the input distribution name is not recognized.
         """
         if distribution == "Beta":
-            model = Beta(risk_dict[attribute]['parameters']['alpha'], risk_dict['frequency']['parameters']['beta'])
+            model = Beta(risk_dict[attribute]['parameters']['alpha'], risk_dict[attribute]['parameters']['beta'])
         elif distribution == "Uniform":
-            model = Uniform(risk_dict[attribute]['parameters']['low'], risk_dict['frequency']['parameters']['high'])
+            model = Uniform(risk_dict[attribute]['parameters']['low'], risk_dict[attribute]['parameters']['high'])
         elif distribution == "Lognormal":
-            model = Lognormal(risk_dict[attribute]['parameters']['low'], risk_dict['impact']['parameters']['high'])
+            model = Lognormal(risk_dict[attribute]['parameters']['mu'], risk_dict[attribute]['parameters']['sigma'])
         elif distribution == "PERT":
             minimum = risk_dict[attribute]['parameters']['low']
-            mean = risk_dict[attribute]['parameters']['mean']
+            mean = risk_dict[attribute]['parameters']['mid']
             maximum = risk_dict[attribute]['parameters']['high']
             model = PERT(minimum, mean, maximum)
         else:
