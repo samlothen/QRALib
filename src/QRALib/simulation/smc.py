@@ -44,10 +44,6 @@ class MonteCarloSimulation:
         outcome = []
 
         outcome = [np.sum(impact[last:last+i]) for i in np.nditer(r_2)]
-        # Testing list comprehension
-        #for i in np.nditer(r_2):
-        #    outcome.append(np.sum(impact[last:last+i]))
-        #    last = last+i
             
         risk_outcome = {
             "id" : risk.uniq_id,
