@@ -7,6 +7,7 @@ from QRALib.analysis.mariq import MaRiQ as mariq
 from QRALib.analysis.sensitivity_analysis import SensitivityAnalysis as sensitivity_analysis
 from QRALib.analysis.tornado import Tornado as tornado
 from QRALib.utils.importer import RiskDataImporter as importer
+from QRALib.utils.exporter import RiskDataExporter as exporter
 from QRALib.analysis.single_risk_analysis import SingleRiskAnalysis as sra
 
 
@@ -55,5 +56,9 @@ sra_.single_risk_analysis(1)
 ta = tornado(risk_results)
 ta.draw_total()
 ta.draw_ale()
+
+out_file=risk_results.csv
+
+exporter.write_csv_file(out_file, risk_results)
 
 print("DONE")

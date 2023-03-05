@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='QRALib',
-      version='0.3',
+      version='0.4',
       description='Description ',
       url='https://github.com/samlothen/QRALib',
       author='Sam Löthén',
