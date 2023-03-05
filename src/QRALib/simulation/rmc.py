@@ -51,9 +51,8 @@ class RandomQuasiMonteCarlo:
         last = 0
         outcome = []
 
-        for i in np.nditer(r_2):
-            outcome.append(np.sum(impact[last:last+i]))
-            last = last+i
+        outcome = [np.sum(impact[last:last+i]) for i in np.nditer(r_2)]
+        
         risk_outcome = {
             "id" : risk.uniq_id,
             "frequency" : r_1,

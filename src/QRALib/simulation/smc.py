@@ -21,7 +21,7 @@ class MonteCarloSimulation:
     def simulation(self, num_of_iter=10000):
         """:param  num_of_iter = number of simulation iterations, default 10 000
         :return: nested dictionary with a 'summary' and 'results' as keys
-        :rtype: dictionary
+        :rtype: dictionary  
         """
 
         self.num_of_iter = num_of_iter
@@ -43,9 +43,7 @@ class MonteCarloSimulation:
         last = 0
         outcome = []
 
-        for i in np.nditer(r_2):
-            outcome.append(np.sum(impact[last:last+i]))
-            last = last+i
+        outcome = [np.sum(impact[last:last+i]) for i in np.nditer(r_2)]
             
         risk_outcome = {
             "id" : risk.uniq_id,
