@@ -14,6 +14,8 @@ setup(name='QRALib',
           'torch',
           'typing',
           'plotly',
-          'SALib'
+          'SALib',
+          'pandas',
+          'openpyxl'
       ],
       zip_safe=False)
