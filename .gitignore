@@ -3,3 +3,5 @@ __pycache__/
 .eggs/
 QRALib.egg-info/
 *.pyc
+# Poetry
+.venv/
