@@ -28,22 +28,27 @@ class Risk:
         self.impact_group = impact_group
         self.impact_model = impact_model
 
-    def get_impact(self, n: int) -> np.ndarray:
+    def get_impact(self, n: int = 1) -> np.ndarray:
         """
         Returns an array of n random samples drawn from the impact distribution.
 
-        Parameters:
+        Parameters
         ----------
-        n : int
-            The number of samples to generate.
+        n : int, optional
+            Number of samples to generate (default is 1). Must be positive.
 
-        Returns:
+        Returns
         -------
         np.ndarray
-            An array of n random samples drawn from the impact distribution.
-        Raises:
-            ValueError: If n is not positive.
+            One-dimensional array of length ``n`` (dtype float) containing sampled impact values.
+
+        Raises
+        ------
+        ValueError
+            If ``n <= 0``.
         """
+        if n <= 0:
+            raise ValueError(f"Sample size n must be positive, got {n}")
 
         return self.impact_model.draw(n)
 
@@ -51,18 +56,23 @@ class Risk:
         """
         Returns an array of n random samples drawn from the frequency distribution.
 
-        Parameters:
+        Parameters
         ----------
-        n : int
-            The number of samples to generate.
+        n : int, optional
+            Number of samples to generate (default is 1). Must be positive.
 
-        Returns:
+        Returns
         -------
         np.ndarray
-            An array of n random samples drawn from the frequency distribution.
-        Raises:
-            ValueError: If n is not positive.
+            One-dimensional array of length ``n`` (dtype float) containing sampled impact values.
+
+        Raises
+        ------
+        ValueError
+            If ``n <= 0``.
         """
+        if n <= 0:
+            raise ValueError(f"Sample size n must be positive, got {n}")
 
         return self.frequency_model.draw(n)
 
@@ -70,18 +80,23 @@ class Risk:
         """
         Returns an array of n samples drawn from the impact distribution using the percent point function.
 
-        Parameters:
+        Parameters
         ----------
-        n : int
-            The number of samples to generate.
+        n : int, optional
+            Number of samples to generate (default is 1). Must be positive.
 
-        Returns:
+        Returns
         -------
         np.ndarray
-            An array of n samples drawn from the impact distribution using the percent point function.
-        Raises:
-            ValueError: If n is not positive.
+            One-dimensional array of length ``n`` (dtype float) containing sampled impact values.
+
+        Raises
+        ------
+        ValueError
+            If ``n <= 0``.
         """
+        if n <= 0:
+            raise ValueError(f"Sample size n must be positive, got {n}")
 
         return self.impact_model.draw_ppf(n)
 
@@ -89,17 +104,22 @@ class Risk:
         """
         Returns an array of n samples drawn from the frequency distribution using the percent point function.
 
-        Parameters:
+        Parameters
         ----------
-        n : int
-            The number of samples to generate.
+        n : int, optional
+            Number of samples to generate (default is 1). Must be positive.
 
-        Returns:
+        Returns
         -------
         np.ndarray
-            An array of n samples drawn from the frequency distribution using the percent point function.
-        Raises:
-            ValueError: If n is not positive.
+            One-dimensional array of length ``n`` (dtype float) containing sampled impact values.
+
+        Raises
+        ------
+        ValueError
+            If ``n <= 0``.
         """
+        if n <= 0:
+            raise ValueError(f"Sample size n must be positive, got {n}")
 
         return self.frequency_model.draw_ppf(n)
