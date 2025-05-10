@@ -4,10 +4,10 @@ import numpy as np
 class Risk:
     """Risk Model"""
 
-    def __init__(self, uniq_id, name: str, frequency_dist: str, frequency_model, impact_dist: str, impact_model) -> None:
+    def __init__(self, uniq_id, name: str, frequency_group: str, frequency_model, impact_group: str, impact_model) -> None:
         """
         Initializes impact and frequency parameters for the risk event.
-        
+
         Parameters:
         ----------
         uniq_id : str
@@ -23,20 +23,20 @@ class Risk:
         """
         self.uniq_id = uniq_id
         self.name = name
-        self.frequency_group = frequency_dist
+        self.frequency_group = frequency_group
         self.frequency_model = frequency_model
-        self.impact_group = impact_dist
+        self.impact_group = impact_group
         self.impact_model = impact_model
 
     def get_impact(self, n: int) -> np.ndarray:
         """
         Returns an array of n random samples drawn from the impact distribution.
-        
+
         Parameters:
         ----------
         n : int
             The number of samples to generate.
-            
+
         Returns:
         -------
         np.ndarray
@@ -50,12 +50,12 @@ class Risk:
     def get_frequency(self, n: int = 1) -> np.ndarray:
         """
         Returns an array of n random samples drawn from the frequency distribution.
-        
+
         Parameters:
         ----------
         n : int
             The number of samples to generate.
-            
+
         Returns:
         -------
         np.ndarray
@@ -69,12 +69,12 @@ class Risk:
     def get_impact_ppf(self, n: int = 1) -> np.ndarray:
         """
         Returns an array of n samples drawn from the impact distribution using the percent point function.
-        
+
         Parameters:
         ----------
         n : int
             The number of samples to generate.
-            
+
         Returns:
         -------
         np.ndarray
@@ -88,12 +88,12 @@ class Risk:
     def get_frequency_ppf(self, n: int = 1) -> np.ndarray:
         """
         Returns an array of n samples drawn from the frequency distribution using the percent point function.
-        
+
         Parameters:
         ----------
         n : int
             The number of samples to generate.
-            
+
         Returns:
         -------
         np.ndarray
