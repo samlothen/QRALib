@@ -240,7 +240,7 @@ simulation. The number of impacts is based on the 'occurrences'
                     "single_risk_impact": [8041, 7422, 98723, 3212],
                     "total" : [14045 , 0, 23895, 0]
                     }
-            }     
+            }
 
 ## Analysis
 
@@ -291,9 +291,9 @@ output the most or verify interaction effects within the model. This can
 help to understand and verify the model or simplify and prioritize
 factors that affect the model the least and most, respectively.
 
-QRALib implements three different Sensitivity Analysis methods: 
-- Tornado Chart 
-- Method of Morris 
+QRALib implements three different Sensitivity Analysis methods:
+- Tornado Chart
+- Method of Morris
 - Sobol's indices
 
 ### Tornado Chart
@@ -387,11 +387,79 @@ Run simulation 5. Run analysis 6. Run sensitivity analysis
     simulation = mcs(risk_list)
     risk_results = simulation.simulation(number_of_iterations)
 
-    # Run analysis 
+    # Run analysis
     analysis = mariq(risk_results1, tolerance)
     analysis.total_risk_analysis()
     analysis.single_risk_analysis()
 
-    # Run sensitivity analysis 
+    # Run sensitivity analysis
     sa = sensitivity_analysis(risk_list)
     morris = sa.impact_morris(1000)
+
+
+## How to plot
+
+### mariq
+
+```
+from QRALib.analysis.mariq import MaRiQAnalysis
+from QRALib.viz.mariq      import plot_total_risk, plot_single_risk
+
+# 1) Run simulation once:
+sim = simulate(risks, method="mcs", iterations=20000)
+
+# 2) Compute data on‐demand
+analysis = MaRiQAnalysis(sim, tolerance)
+total_data  = analysis.compute_total()
+single_data = analysis.compute_single(top_n=10)
+
+# 3) Plot only when needed
+fig1 = plot_total_risk(total_data)
+fig2 = plot_single_risk(single_data)
+```
+
+### sensitivity_analysis
+
+```
+from QRALib.analysis.sensitivity import SensitivityAnalysis
+from QRALib.viz.sensitivity   import plot_morris, plot_sobol
+
+sa = SensitivityAnalysis(risk_list)
+Si_morris = sa.morris_indices(1000)
+fig1 = plot_morris(Si_morris, top_n=10)
+fig1.show()
+
+Si_sobol = sa.sobol_indices(1024)
+fig2 = plot_sobol(Si_sobol, top_n=10)
+fig2.show()
+```
+
+
+### single_risk_analysis
+
+```
+from QRALib.analysis.single_risk import SingleRiskAnalysis
+from QRALib.viz.single_risk     import plot_single_risk
+
+ana = SingleRiskAnalysis(sim_results)
+stats = ana.compute_stats(0)
+exc   = ana.compute_exceedance(0)
+fig = plot_single_risk(stats, exc)
+fig.show()
+```
+
+### Tornado
+
+```
+from QRALib.analysis.tornado import TornadoAnalysis
+from QRALib.viz.tornado      import plot_ale_variation, plot_total_variation
+
+ta = TornadoAnalysis(sim_results)
+data_single, data_freq = ta.compute_variation("single_risk_impact"), ta.compute_variation("frequency")
+fig_ale = plot_ale_variation(data_single, data_freq)
+fig_ale.show()
+
+data_total = ta.compute_variation("total")
+fig_total = plot_total_variation(data_total)
+fig_total.show()
+```

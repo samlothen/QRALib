@@ -1,181 +1,73 @@
+# src/QRALib/analysis/tornado.py
+"""
+Data-only analysis for Tornado sensitivity charts (no plotting).
+"""
 import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-from statistics import mean 
+from typing import Dict, Any, List, Tuple
 
+class TornadoAnalysis:
+    """
+    Compute Tornado variations for risks based on simulation results.
 
-class Tornado:
+    Parameters
+    ----------
+    sim_result : Dict[str, Any]
+        Simulation result dict with keys "results": list of dicts having ["id","frequency","single_risk_impact","total"].
+    """
+    def __init__(self, sim_result: Dict[str, Any]) -> None:
+        self.results = sim_result["results"]
+        self.risk_ids = [r["id"] for r in self.results]
 
-    def __init__(self, risk_results):
-        single_risk_impact_data, frequency_data = self._set_ale_stats(risk_results)
-        total_impact_data = self._set_stats(risk_results,"total")
-        
-        self.tornado_parameters = {
-            "single_risk_impact" : single_risk_impact_data,
-            "frequency" : frequency_data,
-            "total": total_impact_data
-        }
+    def compute_variation(
+        self,
+        attribute: str
+    ) -> Dict[str, np.ndarray]:
+        """
+        Compute positive and negative variations for Tornado chart.
 
-    def draw_ale(self): 
-        self._draw("single_risk_impact")  
-        self._draw("frequency")  
+        Parameters
+        ----------
+        attribute : str
+            One of 'single_risk_impact', 'frequency', or 'total'.
 
-    def draw_total(self): 
-        self._draw("total")  
-
-    def _set_stats(self, risk_results, attribute):
+        Returns
+        -------
+        Dict[str, np.ndarray]
+            {
+              'id': sorted ids by absolute difference,
+              'negative_variation': sorted negative variation arrays,
+              'positive_variation': sorted positive variation arrays
+            }
+        """
         assert attribute in ['single_risk_impact', 'frequency', 'total']
-        percentile_95 = []
-        percentile_5 = []
-        mean_value = []
-        risk_id = []
-        
-        for i in range(len(risk_results["results"])):
-            risk_id.append(risk_results["results"][i]["id"])
-            mean_value.append(mean(risk_results["results"][i][attribute]))
-            percentile_95.append(
-                np.percentile(risk_results["results"][i][attribute], 95))
-            percentile_5.append(
-                np.percentile(risk_results["results"][i][attribute], 5))
+        # Gather stats: mean, 5th, 95th percentiles
+        mean_vals = []
+        p5_vals = []
+        p95_vals = []
+        for r in self.results:
+            arr = np.asarray(r[attribute])
+            mean_vals.append(np.mean(arr))
+            p5_vals.append(np.percentile(arr, 5))
+            p95_vals.append(np.percentile(arr, 95))
+        mean_sum = sum(mean_vals)
 
+        neg_var = []
+        pos_var = []
+        # compute one-at-a-time OAT variations
+        for i in range(len(mean_vals)):
+            # negative: replace mean[i] by p5_vals[i]
+            neg = (sum(mean_vals[:i]) + p5_vals[i] + sum(mean_vals[i+1:])) - mean_sum
+            # positive: replace mean[i] by p95_vals[i]
+            pos = (sum(mean_vals[:i]) + p95_vals[i] + sum(mean_vals[i+1:])) - mean_sum
+            neg_var.append(min(neg, 0))
+            pos_var.append(max(pos, 0))
 
-        negative_variation = []
-        positive_variation = []
-        mean_sum = sum(mean_value)
-        for i in range(0,len(mean_value),1):
-            negative_variation.append((
-                sum(mean_value[:i])+percentile_5[i]+sum(mean_value[i+1:]))-mean_sum)
-            positive_variation.append((
-                sum(mean_value[:i])+percentile_95[i]+sum(mean_value[i+1:]))-mean_sum)
+        # sort by absolute variation
+        abs_diff = [abs(p - n) for p, n in zip(pos_var, neg_var)]
+        idx = np.argsort(abs_diff)
 
-        data = self._sorter(positive_variation, negative_variation, risk_id)
-        return data
-
-    def _set_ale_stats(self, risk_results):
-        
- 
-        single_risk_impact_percentile_95 = []
-        single_risk_impact_percentile_5 = []
-        single_risk_impact_mean_value = []
-        
-        frequency_percentile_95 = []
-        frequency_percentile_5 = []
-        frequency_mean_value = []
-
-        mean_value = []
-        
-        risk_id = []
-        
-        for i in range(len(risk_results["results"])):
-            risk_id.append(risk_results["results"][i]["id"])
-            single_risk_impact_mean_value.append(
-                mean(risk_results["results"][i]["single_risk_impact"]))
-            single_risk_impact_percentile_95.append(
-                np.percentile(risk_results["results"][i]["single_risk_impact"], 95))
-            single_risk_impact_percentile_5.append(
-                np.percentile(risk_results["results"][i]["single_risk_impact"], 5))
-            frequency_mean_value.append(
-                mean(risk_results["results"][i]["frequency"]))
-            frequency_percentile_95.append(
-                np.percentile(risk_results["results"][i]["frequency"], 95))
-            frequency_percentile_5.append(
-                np.percentile(risk_results["results"][i]["frequency"], 5))
-            mean_value.append(
-                mean(risk_results["results"][i]["single_risk_impact"]*risk_results["results"][i]["frequency"]))
-
-        single_risk_impact_negative_variation = []
-        single_risk_impact_positive_variation = []
-        
-        frequency_negative_variation = []
-        frequency_positive_variation = []
-
-        mean_sum = sum(mean_value)
-
-        for i in range(0,len(mean_value),1):
-            single_risk_impact_negative_variation.append(
-                (sum(mean_value[:i])
-                +(single_risk_impact_percentile_5[i]*frequency_mean_value[i])
-                +sum(mean_value[i+1:]))
-                -mean_sum)
-            single_risk_impact_positive_variation.append(
-                (sum(mean_value[:i])
-                +(single_risk_impact_percentile_95[i]*frequency_mean_value[i])
-                +sum(mean_value[i+1:]))
-                -mean_sum)
-            frequency_negative_variation.append(
-                (sum(mean_value[:i])
-                +(single_risk_impact_mean_value[i]*frequency_percentile_5[i])
-                +sum(mean_value[i+1:]))
-                -mean_sum)
-            frequency_positive_variation.append(
-                (sum(mean_value[:i])
-                +(single_risk_impact_mean_value[i]*frequency_percentile_95[i])
-                +sum(mean_value[i+1:]))
-                -mean_sum)            
-        
-        single_risk_impact_data = self._sorter(single_risk_impact_positive_variation, single_risk_impact_negative_variation, risk_id)
-        frequency_data = self._sorter(frequency_positive_variation, frequency_negative_variation, risk_id)
-
-        return single_risk_impact_data, frequency_data
-
-    def _sorter(self, positive_variation, negative_variation, risk_id):
-        index = 0
-        for pos_value,neg_value in zip(positive_variation, negative_variation):
-            if pos_value < neg_value:
-               negative_variation[index] = pos_value
-               positive_variation[index] = 0
-            elif neg_value > pos_value:
-                positive_variation[index] = neg_value
-                negative_variation[index] = 0
-            elif pos_value < 0:
-                positive_variation[index] = 0
-            elif neg_value > 0:
-                negative_variation[index] = 0
-            index += 1
-
-        absolute_difference = []
-        for pos_value,neg_value in zip(positive_variation, negative_variation):
-            absolute_difference.append(pos_value-neg_value)
-
-        data = {"risk_ids": risk_id,
-        "negative_variation": negative_variation,
-        "positive_variation": positive_variation,
-        "absolute_difference": absolute_difference}
-
-        risk_id_sorted = np.array([data["risk_ids"][x] for x in np.argsort(data["absolute_difference"])])
-        negative_variation_sorted = np.array([data["negative_variation"][x] for x in np.argsort(data["absolute_difference"])])
-        positive_variation_sorted = np.array([data["positive_variation"][x] for x in np.argsort(data["absolute_difference"])])
-
-        return_data = {
-            "id" : risk_id_sorted,
-            "negative_variation": negative_variation_sorted,
-            "positive_variation": positive_variation_sorted
+        return {
+            'id': np.array(self.risk_ids)[idx],
+            'negative_variation': np.array(neg_var)[idx],
+            'positive_variation': np.array(pos_var)[idx]
         }
-        return return_data
-
-
-    
-    
-    def _draw(self, attribute):
-        assert attribute in ['single_risk_impact', 'frequency', 'total']
-
-        fig = make_subplots(rows=1, cols=2, specs=[[{}, {}]], shared_xaxes=True,
-                            shared_yaxes=True, vertical_spacing=0,horizontal_spacing = 0 )
-        
-        fig.append_trace(go.Bar(
-            x=self.tornado_parameters[attribute]["negative_variation"],
-            y=self.tornado_parameters[attribute]["id"],
-            name='Negative variation',
-            orientation='h',
-        ), 1, 1)                
-        fig.append_trace(go.Bar(
-            x=self.tornado_parameters[attribute]["positive_variation"],
-            y=self.tornado_parameters[attribute]["id"],
-            name='Positive variation',
-            orientation='h',
-        ), 1, 2)
-        fig.update_layout(
-            title=attribute,
-            legend_title="Legend ",)       
-
-        fig.show()

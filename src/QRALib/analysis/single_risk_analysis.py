@@ -1,100 +1,82 @@
-"""Single Risk Analysis tool to explore individual risks. 
+# src/QRALib/analysis/single_risk.py
 """
-
+Data-only analysis for single-risk exploration (no plotting).
+"""
 import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-from statistics import mean
+from typing import Dict, Any, Tuple
 
 class SingleRiskAnalysis:
+    """
+    Compute statistics and exceedance data for one risk from simulation results.
 
-    def __init__(self, simulation_result):
-        self.simulation_dict = simulation_result["results"]
-        self.num_iter = simulation_result["summary"]["number_of_iterations"]
-    
-    def single_risk_analysis(self, risk_no):
+    Parameters
+    ----------
+    sim_result : Dict[str, Any]
+        Simulation result dict with keys:
+          - "summary": {"number_of_iterations": int, ...}
+          - "results": list of dicts with keys ["id","frequency","impact","single_risk_impact","total"]
 
-        tbl_headers = ["Attribute", "Min", "5%", "Mean", "95%", "Max"]
-        attribute = ["Frequency","Impact"]
-        min_val =[round(min(self.simulation_dict[risk_no]["frequency"]), 2),round(min(self.simulation_dict[risk_no]["single_risk_impact"]), 2)]
-        percentile_5th = [round(np.percentile(self.simulation_dict[risk_no]["frequency"], 5), 2),round(np.percentile(self.simulation_dict[risk_no]["single_risk_impact"], 5), 2)]
-        mean_val = [round(mean(self.simulation_dict[risk_no]["frequency"]),  2),round(mean(self.simulation_dict[risk_no]["single_risk_impact"]), 2)]
-        percentile_95th = [round(np.percentile(self.simulation_dict[risk_no]["frequency"], 95), 2),round(np.percentile(self.simulation_dict[risk_no]["single_risk_impact"], 95), 2)]
-        max_val = [round(max(self.simulation_dict[risk_no]["frequency"]), 2), round(max(self.simulation_dict[risk_no]["single_risk_impact"]), 2)]
+    Attributes
+    ----------
+    num_iter : int
+        Number of simulation iterations.
+    """
+    def __init__(self, sim_result: Dict[str, Any]) -> None:
+        self.results = sim_result["results"]
+        self.num_iter = sim_result["summary"]["number_of_iterations"]
 
+    def compute_stats(self, risk_idx: int) -> Dict[str, Any]:
+        """
+        Compute summary statistics for a single risk.
 
-        sorted_array = np.sort(self.simulation_dict[risk_no]["total"])
-        max_outcome = np.percentile(sorted_array, 99)
-        points = np.arange(0, max_outcome+1, max_outcome/100)
-        counter = np.zeros(shape=(len(points),1))
+        Returns
+        -------
+        Dict[str, Any]
+            {
+              "id": str,
+              "frequency": np.ndarray,
+              "impact": np.ndarray,
+              "total": np.ndarray,
+              "table": {
+                  "min": [min_freq, min_imp],
+                  "p5":  [..., ...],
+                  "mean": [..., ...],
+                  "p95": [..., ...],
+                  "max":  [..., ...],
+              }
+            }
+        """
+        r = self.results[risk_idx]
+        freq = np.asarray(r["frequency"])
+        imp_ppf = np.asarray(r["single_risk_impact"])
+        total = np.asarray(r["total"])
 
+        stats = {
+            "id": r["id"],
+            "frequency": freq,
+            "impact": imp_ppf,
+            "total": total,
+            "table": {
+                "min":   [float(np.min(freq)), float(np.min(imp_ppf))],
+                "p5":    [float(np.percentile(freq, 5)),  float(np.percentile(imp_ppf, 5))],
+                "mean":  [float(np.mean(freq)),         float(np.mean(imp_ppf))],
+                "p95":   [float(np.percentile(freq, 95)), float(np.percentile(imp_ppf, 95))],
+                "max":   [float(np.max(freq)),         float(np.max(imp_ppf))],
+            }
+        }
+        return stats
 
-        for i in range(0,len(points)):
-            counter[i] = sum(comp >= points[i] for comp in self.simulation_dict[risk_no]["total"])
-        
-        y1 = counter/self.num_iter
-        y1_flat = [y for x in y1 for y in x]
+    def compute_exceedance(self, risk_idx: int, num_bins: int = 100) -> Dict[str, np.ndarray]:
+        """
+        Compute impact exceedance curve for a single risk.
 
-
-
-        uncertainty_fig = make_subplots(
-            rows=3, 
-            cols=2,
-            specs=[
-                [{"type": "scatter", "rowspan": 2}, {"type": "box"}],
-                [None, {"type": "box"}],
-                [{"type": "table", "colspan": 2}, None]],
-           subplot_titles=("Impact exceedance curve", "Frequency", "Impact", "Statistics"))
-
-        uncertainty_fig.add_trace(go.Box(
-                x=(self.simulation_dict[risk_no]["frequency"]),
-                name='',
-                boxpoints=False,
-                boxmean='sd',
-                showlegend=False),
-                row=1, col=2)
-
-
-        uncertainty_fig.add_trace(go.Box(
-                x=self.simulation_dict[risk_no]["single_risk_impact"],
-                name='',
-                boxpoints=False,
-                boxmean='sd',
-                showlegend=False),
-                row=2, col=2)
-
-
-        
-        uncertainty_fig.add_trace(
-            go.Scatter(
-                x=points,y=y1_flat,
-                name='',
-                marker=dict(color="crimson"), showlegend=False),row=1, col=1)
-        
-        uncertainty_fig.add_trace(
-            go.Table(columnwidth = [50,50,50,50,50,50],header=dict(values=tbl_headers,align='left'),
-                cells=dict(values=[attribute, min_val, percentile_5th, mean_val, percentile_95th, max_val],
-                align='left')), row=3, col=1)
-
-        risk_id_string = self.simulation_dict[risk_no]["id"]
-        title = f"Analysis Risk {risk_id_string}"
-        
-        uncertainty_fig.update_xaxes(title_text="Impact", row=1, col=1)
-        uncertainty_fig.update_yaxes(title_text="Impact exceedance probability",tickformat=".2%", row=1, col=1)
-
-        uncertainty_fig.update_xaxes(tickformat=".2%", row=1, col=2)
-
-
-        uncertainty_fig.update_layout(title={
-                                'text': title},
-                                autosize=False,
-                                width=1000,
-                                height=750,
-                                margin=dict(
-                                    l=50,
-                                    r=50,
-                                    b=50,
-                                    t=100,
-                                    pad=4
-                                ))
-        uncertainty_fig.show()
+        Returns
+        -------
+        Dict[str, np.ndarray]
+            {"bins": np.ndarray, "exceedance": np.ndarray}
+        """
+        total = np.sort(self.results[risk_idx]["total"])
+        max_val = np.percentile(total, 99)
+        bins = np.linspace(0, max_val, num_bins)
+        exceedance = np.array([np.mean(total >= b) for b in bins])
+        return {"bins": bins, "exceedance": exceedance}
