@@ -1,98 +1,176 @@
+# src/QRALib/utils/importer.py
+# -------------------------------
 import csv
 import json
 import pandas as pd
+import uuid
 from typing import Dict, List, Any
 
+from ..risk.model import Risk
+from ..distributions.beta import Beta
+from ..distributions.uniform import Uniform
+from ..distributions.lognormal import Lognormal
+from ..distributions.pert import PERT
+
+# Distribution registry for easy extension
+_DIST_REGISTRY: Dict[str, Any] = {
+    "Beta": Beta,
+    "Uniform": Uniform,
+    "Lognormal": Lognormal,
+    "PERT": PERT,
+}
 
 class RiskDataImporter:
     @staticmethod
-    def import_csv(file_path: str) -> Dict[str, List[Dict[str, Any]]]:
+    def import_risks(file_path: str) -> List[Risk]:
         """
-        Import risk data from a CSV file and return it as a dictionary.
+        Read a file (CSV, JSON, XLSX) and return a list of Risk instances.
 
-        :param file_path: Path to the CSV file to import
-        :type file_path: str
-        :return: Dictionary containing the imported risk data
-        :rtype: Dict[str, List[Dict[str, Any]]]
+        Automatically generates a UUID if no ID is provided in the source data.
+
+        Parameters
+        ----------
+        file_path : str
+            Path to input data file.
+
+        Returns
+        -------
+        List[Risk]
+            List of instantiated Risk objects.
+
+        Raises
+        ------
+        ValueError
+            If file format is unsupported or data is invalid.
         """
-        risk_dict = {'Risks': []}
-        with open(file_path, 'r') as data:
-            for line in csv.DictReader(data):
-                risk = {
-                    'ID': line['ID'],
-                    'name': line['name'],
-                    'frequency': {'distribution': line['frequency_distribution'], 'parameters': {}},
-                    'impact': {'distribution': line['impact_distribution'], 'parameters': {}}
-                }
-                if risk['frequency']['distribution'] == 'Beta':
-                    risk['frequency']['parameters']['alpha'] = float(line['frequency_parameter0'])
-                    risk['frequency']['parameters']['beta'] = float(line['frequency_parameter1'])
-                if risk['frequency']['distribution'] == 'PERT':
-                    risk['frequency']['parameters']['low'] = float(line['frequency_parameter0'])
-                    risk['frequency']['parameters']['mid'] = float(line['frequency_parameter1'])
-                    risk['frequency']['parameters']['high'] = float(line['frequency_parameter2'])
-                if risk['frequency']['distribution'] == 'Uniform':
-                    risk['frequency']['parameters']['low'] = float(line['frequency_parameter0'])
-                    risk['frequency']['parameters']['high'] = float(line['frequency_parameter1'])
-                if risk['impact']['distribution'] == 'Lognormal':
-                    risk['impact']['parameters']['mu'] = float(line['impact_parameter0'])
-                    risk['impact']['parameters']['sigma'] = float(line['impact_parameter1'])
-                if risk['impact']['distribution'] == 'PERT':
-                    risk['impact']['parameters']['low'] = float(line['impact_parameter0'])
-                    risk['impact']['parameters']['mid'] = float(line['impact_parameter1'])
-                    risk['impact']['parameters']['high'] = float(line['impact_parameter2'])
-                risk_dict['Risks'].append(risk)
-        return risk_dict
+        raw = RiskDataImporter._read_raw(file_path)
+        risks: List[Risk] = []
+        for rd in raw.get("Risks", []):
+            # Generate an ID if missing or empty
+            if not rd.get("ID"):
+                rd["ID"] = str(uuid.uuid4())
+
+            # Validate structure
+            _validate_raw_risk(rd)
+
+            uid = rd["ID"]
+            name = rd.get("name", "")
+
+            # Build frequency distribution
+            freq_info = rd["frequency"]
+            freq_group = freq_info.get("distribution", "")
+            freq_model = RiskDataImporter._build_distribution(freq_info)
+
+            # Build impact distribution
+            imp_info = rd["impact"]
+            imp_group = imp_info.get("distribution", "")
+            imp_model = RiskDataImporter._build_distribution(imp_info)
+
+            risks.append(
+                Risk(uid, name, freq_group, freq_model, imp_group, imp_model)
+            )
+        return risks
 
     @staticmethod
-    def import_json(file_path: str) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Import risk data from a JSON file and return it as a dictionary.
+    def _read_raw(file_path: str) -> Dict[str, List[Dict[str, Any]]]:
+        ext = file_path.lower().rsplit('.', 1)[-1]
+        if ext == 'csv':
+            return RiskDataImporter._import_csv(file_path)
+        elif ext == 'json':
+            return RiskDataImporter._import_json(file_path)
+        elif ext in ('xlsx', 'xls'):
+            return RiskDataImporter._import_excel(file_path)
+        else:
+            raise ValueError(f"Unsupported file format: {file_path}")
 
-        :param file_path: Path to the JSON file to import
-        :type file_path: str
-        :return: Dictionary containing the imported risk data
-        :rtype: Dict[str, List[Dict[str, Any]]]
-        """
-        with open(file_path, 'r', encoding='utf-8') as json_file:
-            risk_dict = json.load(json_file)
-        return risk_dict
-    
     @staticmethod
-    def import_excel(file_path: str) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Import risk data from an Excel file and return it as a dictionary.
-    
-        :param file_path: Path to the Excel file to import
-        :type file_path: str
-        :return: Dictionary containing the imported risk data
-        :rtype: Dict[str, List[Dict[str, Any]]]
-        """
-        risk_dict = {'Risks': []}
+    def _import_csv(file_path: str) -> Dict[str, List[Dict[str, Any]]]:
+        data: Dict[str, List[Dict[str, Any]]] = {"Risks": []}
+        with open(file_path, newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                data["Risks"].append(_normalize_row(row))
+        return data
+
+    @staticmethod
+    def _import_json(file_path: str) -> Dict[str, List[Dict[str, Any]]]:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+
+    @staticmethod
+    def _import_excel(file_path: str) -> Dict[str, List[Dict[str, Any]]]:
         df = pd.read_excel(file_path, dtype=str)
+        data: Dict[str, List[Dict[str, Any]]] = {"Risks": []}
         for _, row in df.iterrows():
-            risk = {
-                'ID': row['ID'],
-                'name': row['name'],
-                'frequency': {'distribution': row['frequency_distribution'], 'parameters': {}},
-                'impact': {'distribution': row['impact_distribution'], 'parameters': {}}
-            }
-            if risk['frequency']['distribution'] == 'Beta':
-                risk['frequency']['parameters']['alpha'] = float(row['frequency_parameter0'])
-                risk['frequency']['parameters']['beta'] = float(row['frequency_parameter1'])
-            if risk['frequency']['distribution'] == 'PERT':
-                risk['frequency']['parameters']['low'] = float(row['frequency_parameter0'])
-                risk['frequency']['parameters']['mid'] = float(row['frequency_parameter1'])
-                risk['frequency']['parameters']['high'] = float(row['frequency_parameter2'])
-            if risk['frequency']['distribution'] == 'Uniform':
-                risk['frequency']['parameters']['low'] = float(row['frequency_parameter0'])
-                risk['frequency']['parameters']['high'] = float(row['frequency_parameter1'])
-            if risk['impact']['distribution'] == 'Lognormal':
-                risk['impact']['parameters']['mu'] = float(row['impact_parameter0'])
-                risk['impact']['parameters']['sigma'] = float(row['impact_parameter1'])
-            if risk['impact']['distribution'] == 'PERT':
-                risk['impact']['parameters']['low'] = float(row['impact_parameter0'])
-                risk['impact']['parameters']['mid'] = float(row['impact_parameter1'])
-                risk['impact']['parameters']['high'] = float(row['impact_parameter2'])
-            risk_dict['Risks'].append(risk)
-        return risk_dict
+            data["Risks"].append(_normalize_row(row.to_dict()))
+        return data
+
+    @staticmethod
+    def _build_distribution(info: Dict[str, Any]) -> Any:
+        """
+        Instantiate a distribution object based on raw info.
+        """
+        dist_name = info.get("distribution")
+        DistClass = _DIST_REGISTRY.get(dist_name)
+        if not DistClass:
+            raise ValueError(f"Unknown distribution: {dist_name}")
+        params = info.get("parameters", {})
+        return DistClass(**params)
+
+
+def _normalize_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Convert a flat CSV/Excel row into the nested structure expected by importer.
+    """
+    rd = {
+        "ID": row.get("ID", ""),
+        "name": row.get("name", ""),
+        "frequency": {"distribution": row.get("frequency_distribution", ""), "parameters": {}},
+        "impact": {"distribution": row.get("impact_distribution",     ""), "parameters": {}},
+    }
+    # Map frequency params based on distribution
+    freq_dist = rd["frequency"]["distribution"]
+    freq_params = rd["frequency"]["parameters"]
+    if freq_dist == "Beta":
+        freq_params["alpha"] = float(row.get("frequency_parameter0", 0))
+        freq_params["beta"]  = float(row.get("frequency_parameter1", 0))
+    elif freq_dist == "Uniform":
+        freq_params["low_bound"]  = float(row.get("frequency_parameter0", 0))
+        freq_params["up_bound"] = float(row.get("frequency_parameter1", 0))
+    elif freq_dist == "Lognormal":
+        # Lognormal frequency not typical, but support if present
+        freq_params["low_bound"]    = float(row.get("frequency_parameter0", 0))
+        freq_params["up_bound"] = float(row.get("frequency_parameter1", 0))
+    elif freq_dist == "PERT":
+        freq_params["minimum"]  = float(row.get("frequency_parameter0", 0))
+        freq_params["mid"]  = float(row.get("frequency_parameter1", 0))
+        freq_params["maximum"] = float(row.get("frequency_parameter2", 0))
+
+    # Map impact params based on distribution
+    imp_dist = rd["impact"]["distribution"]
+    imp_params = rd["impact"]["parameters"]
+    if imp_dist == "Beta":
+        imp_params["alpha"] = float(row.get("impact_parameter0", 0))
+        imp_params["beta"]  = float(row.get("impact_parameter1", 0))
+    elif imp_dist == "Uniform":
+        imp_params["low_bound"]  = float(row.get("impact_parameter0", 0))
+        imp_params["up_bound"] = float(row.get("impact_parameter1", 0))
+    elif imp_dist == "Lognormal":
+        imp_params["low_bound"]    = float(row.get("impact_parameter0", 0))
+        imp_params["up_bound"] = float(row.get("impact_parameter1", 0))
+    elif imp_dist == "PERT":
+        imp_params["minimum"]  = float(row.get("impact_parameter0", 0))
+        imp_params["mid"]  = float(row.get("impact_parameter1", 0))
+        imp_params["maximum"] = float(row.get("impact_parameter2", 0))
+
+    return rd
+
+
+def _validate_raw_risk(rd: Dict[str, Any]):
+    """
+    Quick structural validation of raw risk dict.
+    """
+    required = {"ID", "name", "frequency", "impact"}
+    missing = required - rd.keys()
+    if missing:
+        raise ValueError(f"Missing keys in risk data: {missing}")

@@ -1,59 +1,28 @@
-"""Example usage of QRALib"""
-from QRALib.riskportfolio import RiskPortfolio  as Risks
-from QRALib.simulation.smc import MonteCarloSimulation as smc
-from QRALib.simulation.qmc import QuasiMonteCarlo as qmc
-from QRALib.simulation.rmc import RandomQuasiMonteCarlo as rqmc
-from QRALib.analysis.mariq import MaRiQ as mariq
-from QRALib.analysis.sensitivity_analysis import SensitivityAnalysis as sensitivity_analysis
-from QRALib.analysis.tornado import Tornado as tornado
-from QRALib.utils.importer import RiskDataImporter as importer
-from QRALib.analysis.single_risk_analysis import SingleRiskAnalysis as sra
+# minimal_qralib_test.py
+# Minimal example to verify QRALib works with your existing files
+from QRALib.risk.portfolio import RiskPortfolio
+from QRALib.utils.importer import RiskDataImporter
+from QRALib.pipeline import QRAPipeline
+from QRALib.api import run_full_qra
 
+# Replace with your actual file paths
+data_file = "./test_data_18.csv"
 
+# 1. Import risks and build a portfolio
+risks = RiskDataImporter.import_risks(data_file)
+portfolio = RiskPortfolio(risks)
+print("Loaded risk IDs:", portfolio.ids())
 
-number_of_iterations = 100000
-#inp_json = "./example.json"
-#inp_csv = "./test_data_600.csv"
-inp_xlsx = "./test_data_18.xlsx"
+# 2. Run a simulation step-by-step
+pipeline = QRAPipeline(data_file, method="mcs", iterations=10000)
+results = pipeline.run_simulation()
+print("Simulation summary:", results["summary"])
 
-tolerance = ([0, 600000, 1000000, 1500000, 3000000], [100, 90, 50, 20, 0])
-
-# Import data 
-
-#risk_dictionary = importer.import_json(inp_json)
-#risk_dictionary = importer.import_csv(inp_csv)
-risk_dictionary = importer.import_excel(inp_xlsx)
-
-# Setup the risk_list
-risk_list = Risks(risk_dictionary)
-
-
-# Simulate 
-simulation = smc(risk_list)
-#simulation = qmc(risk_list)
-#simulation = rqmc(risk_list)
-
-risk_results = simulation.simulation(number_of_iterations)
-
-# Analysis 
-analysis = mariq(risk_results, tolerance)
-analysis.total_risk_analysis()
-analysis.single_risk_analysis()
-
-# Sensitivity Analysis
-sa = sensitivity_analysis(risk_list)
-sa.morris(1000)
-# Sobol Convergence properties of the Sobol' sequence is only valid if
-# `N` is equal to `2^n`.
-sa.sobol(1024)
-
-# Single Risk Analysis
-sra_ = sra(risk_results)
-sra_.single_risk_analysis(1)
-
-# Tornado 
-ta = tornado(risk_results)
-ta.draw_total()
-ta.draw_ale()
-
-print("DONE")
+# 3. Use the one-line API for full analysis and single-risk output
+full_results = run_full_qra(
+    data_file,
+    method="mcs",
+    iterations=5000,
+    single_risk_idx=0
+)
+print("Full pipeline output keys:", full_results.keys())

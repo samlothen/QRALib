@@ -1,7 +1,7 @@
 import numpy as np
 from SALib.sample import saltelli
 from SALib.analyze import sobol
-from SALib.analyze import morris 
+from SALib.analyze import morris
 from SALib.sample.morris import sample as morris_sample
 import plotly.graph_objects as go
 
@@ -10,10 +10,10 @@ class SensitivityAnalysis:
     def __init__(self, risk_list):
 
         self.names = []
-        for risk in risk_list.listing():
-            self.names.append(risk.uniq_id+"_frequency") 
-            self.names.append(risk.uniq_id+"_impact") 
-        
+        for risk in risk_list:
+            self.names.append(risk.uniq_id+"_frequency")
+            self.names.append(risk.uniq_id+"_impact")
+
         self.num_vars = len(self.names)
 
         dists = np.repeat("unif", self.num_vars)
@@ -23,14 +23,14 @@ class SensitivityAnalysis:
         self.bounds = bounds.tolist()
 
         self.problem = {
-            "num_vars": self.num_vars, 
-            "names": self.names, 
+            "num_vars": self.num_vars,
+            "names": self.names,
             "dists": self.dists,
             "bounds": self.bounds
-        }  
+        }
         self.equation = []
 
-        for risk in risk_list.listing():
+        for risk in risk_list:
             self.equation.append(risk.get_frequency_ppf)
             self.equation.append(risk.get_impact_ppf)
 
@@ -45,7 +45,7 @@ class SensitivityAnalysis:
         Y = np.sum(total_outcome, axis=0)
 
         Si = morris.analyze(self.problem, param_values, Y, conf_level=0.95, print_to_console=False, num_levels=4, num_resamples=100)
-        
+
         names_sorted = self._sort_Si(Si, 'names', 'mu_star')[::-1]
         mu_star_sorted = np.round(self._sort_Si(Si, 'mu_star', 'mu_star')[::-1], 4)
         mu_star_conf_sorted = np.round(self._sort_Si(Si, 'mu_star_conf', 'mu_star')[::-1], 4)
@@ -74,7 +74,7 @@ class SensitivityAnalysis:
 
         #return Si
 
-    
+
     def sobol(self, number_of_samples: int):
         param_values = saltelli.sample(self.problem, number_of_samples, calc_second_order=False)
         Y = np.empty([param_values.shape[0]])
@@ -142,6 +142,6 @@ class SensitivityAnalysis:
 
         fig.show()
 
-    
+
     def _sort_Si(self, Si, key, sortby='mu_star'):
         return np.array([Si[key][x] for x in np.argsort(Si[sortby])])

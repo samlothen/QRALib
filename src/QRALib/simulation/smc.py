@@ -1,7 +1,7 @@
 """Simulate risk portfolio using Monte Carlo Simulations.
-The simulator takes a list of risks when setting up. 
+The simulator takes a list of risks when setting up.
 The simulation takes the number of interations as input.
-Output is a nested dictionary. The dictionary has two primary keys 'summary' and 
+Output is a nested dictionary. The dictionary has two primary keys 'summary' and
 'results' that contain the information about the simulation and the results.
 """
 
@@ -21,11 +21,11 @@ class MonteCarloSimulation:
     def simulation(self, num_of_iter=10000):
         """:param  num_of_iter = number of simulation iterations, default 10 000
         :return: nested dictionary with a 'summary' and 'results' as keys
-        :rtype: dictionary  
+        :rtype: dictionary
         """
 
         self.num_of_iter = num_of_iter
-        risk_outcome = Parallel(n_jobs=self.num_cores)(delayed(self._simulation)(risk) for risk in self.risk_list.listing())
+        risk_outcome = Parallel(n_jobs=self.num_cores)(delayed(self._simulation)(risk) for risk in self.risk_list)
         simulation_result = {
             "summary":{
                 "number_of_iterations": num_of_iter,
@@ -34,7 +34,7 @@ class MonteCarloSimulation:
             "results": risk_outcome
         }
         return simulation_result
-        
+
     def _simulation(self, risk):
         r_1 = risk.get_frequency(self.num_of_iter)
         r_2 = poisson(r_1)
@@ -44,7 +44,7 @@ class MonteCarloSimulation:
         outcome = []
 
         outcome = [np.sum(impact[last:last+i]) for i in np.nditer(r_2)]
-            
+
         risk_outcome = {
             "id" : risk.uniq_id,
             "frequency" : r_1,
@@ -53,5 +53,5 @@ class MonteCarloSimulation:
             "single_risk_impact" : sr_impact,
             "total" : outcome
         }
-        
+
         return risk_outcome

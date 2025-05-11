@@ -12,7 +12,7 @@ finally:
 
 # — public API exports —
 from .utils.importer           import RiskDataImporter
-from .riskportfolio            import RiskPortfolio
+from .risk.portfolio           import RiskPortfolio
 from .simulation.smc           import MonteCarloSimulation
 from .simulation.qmc           import QuasiMonteCarlo
 from .simulation.rmc           import RandomQuasiMonteCarlo

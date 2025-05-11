@@ -3,7 +3,7 @@
 import os
 
 from .utils.importer import RiskDataImporter
-from .riskportfolio import RiskPortfolio
+from .risk import RiskPortfolio
 from .simulation.smc import MonteCarloSimulation
 from .simulation.qmc import QuasiMonteCarlo
 from .simulation.rmc import RandomQuasiMonteCarlo
@@ -23,17 +23,9 @@ class QRAPipeline:
         self.source = source
         self.method = method
         self.iterations = iterations
-        # Auto-detect import method based on file extension
-        ext = os.path.splitext(source)[1].lower()
-        if ext in ('.xlsx', '.xls'):
-            data = RiskDataImporter.import_excel(source)
-        elif ext == '.csv':
-            data = RiskDataImporter.import_csv(source)
-        elif ext == '.json':
-            data = RiskDataImporter.import_json(source)
-        else:
-            raise ValueError(f"Unsupported file extension: {ext}")
-        self.portfolio = RiskPortfolio(data)
+
+        risks = RiskDataImporter.import_risks(source)
+        self.portfolio = RiskPortfolio(risks)
         self.results = None
 
     def run_simulation(self):

@@ -76,50 +76,54 @@ class Risk:
 
         return self.frequency_model.draw(n)
 
-    def get_impact_ppf(self, n: int = 1) -> np.ndarray:
+    def get_impact_ppf(self, n) -> np.ndarray:
         """
-        Returns an array of n samples drawn from the impact distribution using the percent point function.
+        Draw samples from the impact distribution using the percent-point function (inverse CDF).
 
         Parameters
         ----------
-        n : int, optional
-            Number of samples to generate (default is 1). Must be positive.
+        n : int or array-like
+        Number of samples to generate (if scalar) or array of quantiles in [0,1).
 
         Returns
         -------
         np.ndarray
-            One-dimensional array of length ``n`` (dtype float) containing sampled impact values.
+        If `n` is an integer, returns a 1D array of length `n`;
+        if `n` is array-like, returns an array of the same shape
+        with the corresponding inverse‐CDF values.
 
         Raises
         ------
         ValueError
-            If ``n <= 0``.
+        If any `n` values are outside the interval [0, 1).
         """
-        if n <= 0:
-            raise ValueError(f"Sample size n must be positive, got {n}")
+        arr = np.asarray(n)
+        if np.any(arr < 0) or np.any(arr >= 1):
+            raise ValueError(f"Quantiles must be in [0, 1), got {arr}")
+        return self.impact_model.draw_ppf(arr)
 
-        return self.impact_model.draw_ppf(n)
-
-    def get_frequency_ppf(self, n: int = 1) -> np.ndarray:
+    def get_frequency_ppf(self, n) -> np.ndarray:
         """
-        Returns an array of n samples drawn from the frequency distribution using the percent point function.
+        Draw samples from the frequency distribution using the percent-point function (inverse CDF).
 
         Parameters
         ----------
-        n : int, optional
-            Number of samples to generate (default is 1). Must be positive.
+        n : int or array-like
+            Number of samples to generate (if scalar) or array of quantiles in [0,1).
 
         Returns
         -------
         np.ndarray
-            One-dimensional array of length ``n`` (dtype float) containing sampled impact values.
+            If `n` is an integer, returns a 1D array of length `n` with sampled values;
+            if `n` is array-like, returns an array of the same shape with the inverse‐CDF values.
 
         Raises
         ------
         ValueError
-            If ``n <= 0``.
-        """
-        if n <= 0:
-            raise ValueError(f"Sample size n must be positive, got {n}")
-
-        return self.frequency_model.draw_ppf(n)
+            If any `n` values are outside the interval [0, 1).
+            """
+        arr = np.asarray(n)
+        # If scalar, we still get a 0-d array, so this covers both cases
+        if np.any(arr < 0) or np.any(arr >= 1):
+            raise ValueError(f"Quantiles must be in [0, 1), got {arr}")
+        return self.frequency_model.draw_ppf(arr)

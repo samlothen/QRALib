@@ -1,11 +1,11 @@
 """Simulate risk portfolio using Quasi Monte Carlo Simulations.
-The simulator takes a list of risks when setting up. 
+The simulator takes a list of risks when setting up.
 The simulation takes the number of interations as input.
-Output is a nested dictionary. The dictionary has two primary keys 'summary' and 
+Output is a nested dictionary. The dictionary has two primary keys 'summary' and
 'results' that contain the information about the simulation and the results.
 
-The simulator uses a quasi-random (or low discrepency) sequence of numbers. 
-The sequence is a suffled Sobolo sequence. 
+The simulator uses a quasi-random (or low discrepency) sequence of numbers.
+The sequence is a suffled Sobolo sequence.
 """
 
 import numpy as np
@@ -30,7 +30,7 @@ class QuasiMonteCarlo:
         """
 
         self.num_of_iter = num_of_iter
-        risk_outcome = Parallel(n_jobs=self.num_cores)(delayed(self._simulation)(risk) for risk in self.risk_list.listing())
+        risk_outcome = Parallel(n_jobs=self.num_cores)(delayed(self._simulation)(risk) for risk in self.risk_list)
         simulation_result = {
             "summary":{
                 "number_of_iterations": num_of_iter,
@@ -39,7 +39,7 @@ class QuasiMonteCarlo:
             "results": risk_outcome
         }
         return simulation_result
-        
+
     def _simulation(self, risk):
         quasi_random_sequence = SobolEngine(3, scramble=False, seed=None)
         quasi_random_sequence = quasi_random_sequence.fast_forward(30)
@@ -60,7 +60,7 @@ class QuasiMonteCarlo:
         outcome = []
 
         outcome = [np.sum(impact[last:last+i]) for i in np.nditer(r_2)]
-            
+
         risk_outcome = {
             "id" : risk.uniq_id,
             "frequency" : r_1,
