@@ -1,194 +1,133 @@
-"""Analytic concept based on MaRiQ by Carlsson and Mattson 
-http://uu.diva-portal.org/smash/record.jsf?pid=diva2%3A1323684&dswid=-2165
-
-Results – Single Risks
-* Estimated risks: All risks listed with ID, name, and calculated mean expected loss
-* Top 10 Risks: Sorted list of the ten risks with the highest computed mean expected loss
-* Heatmap: Based on the mean likelihood and mean impact of the top 10-prioritized risks
-* Uncertainty: Each line represents the 90% interval of simulated impacts. Marke of mean of simulated impact.
-Results - Total Risk
-* Provides a cumulative frequency plot, in our tool called impact exceedance graph. 
-The impact exceedance graph visualizes the combined risk impact. 
-* Blue curve represents the simulated outcomes of the total risk impact - the probability of the impact exceeding a specific value. 
-* Red curve represents the total risk tolerance, as stated by the user in the Estimations-worksheet.
+# src/QRALib/analysis/mariq.py
 """
-
+Analysis module for MaRiQ quantitative risk analysis (data-only, no visualization).
+"""
 import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import itertools
+from typing import Dict, Any, List, Tuple
 
-class MaRiQ:
+class MaRiQAnalysis:
+    """
+    Perform MaRiQ analysis on simulation results.
 
-    def __init__(self, simulation_result, risk_tolerance):
-        self.risk_id = simulation_result["summary"]["risk_list"].risk_id_list()
-        self.num_iter = simulation_result["summary"]["number_of_iterations"]
-        self.no_risks = len(self.risk_id)
-        total_outcome = np.zeros(shape=(self.no_risks, self.num_iter))
-        j = 0
-        for i in simulation_result["results"]:
-            total_outcome[j]=(i["total"])
-            j += 1
-        self.total_risk_matrix = total_outcome.sum(axis=0)
-        self.mariq_data = []
-        self._set_stats(simulation_result["results"])
-        self.total_risk_tolerance = risk_tolerance
-        
+    Parameters
+    ----------
+    sim_result : Dict[str, Any]
+        A simulation result structure with keys:
+        - "summary": {"number_of_iterations": int, "risk_list": ...}
+        - "results": list of dicts with keys ["id","frequency","impact","single_risk_impact","total"]
+    tolerance : Tuple[List[float], List[float]]
+        User-defined risk tolerance as (x_values, y_percentages).
+    """
+    def __init__(
+        self,
+        sim_result: Dict[str, Any],
+        tolerance: Tuple[List[float], List[float]]
+    ):
+        self.sim = sim_result
+        self.tolerance = tolerance
+        self.num_iter = self.sim["summary"]["number_of_iterations"]
+        results = self.sim["results"]
 
-    def _set_stats(self, simulation_dict):
-        risk_id = []
-        impact = []
-        mean_frequency = []
-        mean_impact = [] 
-        mean_expected_loss = []
+        # Extract risk IDs
+        self.risk_ids: List[str] = [r["id"] for r in results]
 
-        for i in simulation_dict:
-            risk_id.append(i["id"])
-            impact.append(i["single_risk_impact"])
-            mean_frequency.append(sum(i["frequency"])/self.num_iter)
-            mean_impact.append(sum(i["impact"])/self.num_iter)
-            mean_expected_loss.append(sum(np.multiply(i["frequency"], i["single_risk_impact"]))/self.num_iter)
-        
-        self.mariq_data = {
-            "id" : risk_id,
-            "impact" : impact,
-            "mean_frequency": mean_frequency,
-            "mean_impact" : mean_impact,
-            "mean_expected_loss" : mean_expected_loss
+        # Build matrix of total outcomes: shape (n_risks, num_iter)
+        self._risk_matrix = np.vstack([r["total"] for r in results])
+        # Total risk across all risks per iteration
+        self.total_risk: np.ndarray = self._risk_matrix.sum(axis=0)
+
+        # Prepare per-risk lists
+        freq_list = [r["frequency"] for r in results]
+        imp_list = [r["impact"] for r in results]
+        sri_list = [r["single_risk_impact"] for r in results]
+
+        # Compute means
+        self.mean_frequency = np.array([np.mean(f) for f in freq_list])
+        self.mean_impact    = np.array([np.mean(i) for i in imp_list])
+        self.mean_expected_loss = np.array([
+            np.mean(np.asarray(f) * np.asarray(sri))
+            for f, sri in zip(freq_list, sri_list)
+        ])
+
+        # Uncertainty matrix for each risk (single risk impacts)
+        self.uncertainty = np.vstack(sri_list)
+
+        # Normalize tolerance y-values (percentages to fraction)
+        tol_x, tol_y = tolerance
+        self.tol_x = np.asarray(tol_x)
+        self.tol_y = np.asarray(tol_y) / 100.0
+
+    def compute_total(self, num_buckets: int = 200) -> Dict[str, np.ndarray]:
+        """
+        Compute the impact exceedance (total-risk) curve.
+
+        Parameters
+        ----------
+        num_buckets : int
+            Number of impact bins for the exceedance curve.
+
+        Returns
+        -------
+        Dict[str, np.ndarray]
+            {
+              "buckets": impact bin edges,
+              "exceedance": exceedance probabilities,
+              "tol_x": tolerance x-values,
+              "tol_y": tolerance y-fractions
+            }
+        """
+        # Sort total risk outcomes
+        sorted_total = np.sort(self.total_risk)
+        # Use 99th percentile as maximum
+        max_outcome = np.percentile(sorted_total, 99)
+        buckets = np.linspace(0, max_outcome, num_buckets)
+        # Probability of exceeding each bucket
+        exceedance = np.array([np.mean(sorted_total >= b) for b in buckets])
+        return {
+            "buckets": buckets,
+            "exceedance": exceedance,
+            "tol_x": self.tol_x,
+            "tol_y": self.tol_y,
         }
 
-        
-    def single_risk_analysis(self, top_number=10):
-        single_risk_analysis_fig = make_subplots(
-            rows=2, 
-            cols=2,
-            specs=[
-                [{"type": "scatter"}, {"type": "box"}],
-                [{"type": "table"}, {"type": "table"}]],
-           subplot_titles=("Heatmap", "Uncertainty", "Top 10 Risks", "Estimated Risks"))
-        
-        if top_number > self.no_risks:
-            top_number = self.no_risks
-        
-        # Uncertainty - box plot of impact
-        uncertainty_ids_sorted = self._sort_data('id', 'mean_expected_loss')[::-1]
-        uncertainty_data = self._sort_data('impact', 'mean_expected_loss')[::-1]
+    def compute_single(self, top_n: int = 10) -> Dict[str, Any]:
+        """
+        Compute single-risk analysis data.
 
-        for i in range(0,top_number,1):
-            single_risk_analysis_fig.add_trace(go.Box(y=uncertainty_data[i], name=uncertainty_ids_sorted[i]),
-                row=1, col=2)
-        
+        Parameters
+        ----------
+        top_n : int
+            Number of top risks by expected loss to include.
 
-        # Heatmap - mean likelihood + mean impact
-        heatmap_ids = self._sort_data('id', 'mean_expected_loss')[::-1]
-        heatmap_frequency = self._sort_data('mean_frequency', 'mean_expected_loss')[::-1]
-        heatmap_impact = self._sort_data('mean_impact', 'mean_expected_loss')[::-1]
-        
-        single_risk_analysis_fig.add_trace(
-            go.Scatter(
-                x=heatmap_frequency[:top_number], 
-                y=heatmap_impact[:top_number], 
-                text=heatmap_ids[:top_number],
-                name='',
-                mode='markers'),
-                row=1, col=1)
+        Returns
+        -------
+        Dict[str, Any]
+            {
+              "risk_ids": list of all risk IDs,
+              "mean_frequency": array of mean frequencies,
+              "mean_impact": array of mean impacts,
+              "mean_expected_loss": array of mean expected losses,
+              "top_ids": list of top_n risk IDs sorted by loss,
+              "top_losses": array of their mean losses,
+              "heatmap_x": array of mean frequencies for top risks,
+              "heatmap_y": array of mean impacts for top risks,
+              "uncertainty": matrix (top_n x num_iter) of single-risk impacts,
+              "top_n": top_n
+            }
+        """
+        # Sort by expected loss ascending, then reverse for descending
+        idx_sorted = np.argsort(self.mean_expected_loss)
+        top_idx = idx_sorted[::-1][:top_n]
 
-        # Top 10 Risks - mean expected loss
-        top10_ids = self._sort_data('id', 'mean_expected_loss')[::-1]
-        top10_mean_expected_loss = self._sort_data('mean_expected_loss', 'mean_expected_loss')[::-1]
-
-        single_risk_analysis_fig.add_trace(
-            go.Table(
-                columnwidth = [50,50],
-                header=dict(values=['Risk ID', 'Risk Level'],
-                align='left'),
-                cells=dict(
-                    values=[top10_ids[:top_number], top10_mean_expected_loss[:top_number]], 
-                align='left')), 
-                row=2, col=1)
-
-
-        # Estimated risks -  mean expected loss
-        risk_list_ids = self._sort_data('id', 'id')
-        risk_list_mean_expected_loss = self._sort_data('mean_expected_loss', 'id')
-
-        single_risk_analysis_fig.add_trace(
-            go.Table(
-                columnwidth = [50,50],
-                header=dict(values=['Risk ID', 'Risk Level'],
-                align='left'),
-                cells=dict(
-                    values=[risk_list_ids, risk_list_mean_expected_loss], 
-                align='left')), 
-                row=2, col=2)
-
-
-
-
-        single_risk_analysis_fig.update_xaxes(title_text="Frequency", tickformat=".2%", row=1, col=1)
-        single_risk_analysis_fig.update_yaxes(title_text="Impact", row=1, col=1)
-
-        single_risk_analysis_fig.update_yaxes(title_text="Impact", row=1, col=2)
-
-        single_risk_analysis_fig.update_layout(title={
-                                'text': 'MaRiQ Results Single Risk'},
-                                autosize=False,
-                                width=1000,
-                                height=750,
-                                margin=dict(
-                                    l=50,
-                                    r=50,
-                                    b=50,
-                                    t=100,
-                                    pad=4
-                                ))
-
-        single_risk_analysis_fig.show()
-
-
-    
-    def _sort_data(self, key, sortby):
-        return np.array([self.mariq_data[key][x] for x in np.argsort(self.mariq_data[sortby])])
-
-
-
-    def total_risk_analysis(self):
-        sorted_array = np.sort(self.total_risk_matrix)
-        max_outcome = np.percentile(sorted_array, 99)
-        risk_buckets = np.arange(0, max_outcome+1, max_outcome/200)
-        counter = np.zeros(shape=(len(risk_buckets),1))
-        i = 0
-        k = 0
-        for i in range(0,len(risk_buckets)):
-            for x in sorted_array:
-                if risk_buckets[i] < x : 
-                    k += 1
-            counter[i] = k
-            k = 0
-        y1 = (counter/self.num_iter)
-        total_risk = list(itertools.chain.from_iterable(y1))
-
-        trt = []
-        for i in self.total_risk_tolerance[1]:
-            trt.append(i/100)
-        fig = go.Figure()
-        fig.layout = go.Layout(yaxis=dict(tickformat=".2%"))
-        fig.add_trace(go.Scatter(x=risk_buckets, y=total_risk,
-                            mode='lines',
-                            line_color='blue',
-                            name='Total Risk'))
-        fig.add_trace(go.Scatter(x=self.total_risk_tolerance[0], y=trt,
-                            mode='lines+markers',
-                            line_color='red',
-                            name='Tolerance'))
-       
-        fig.update_layout(title={
-                                'text': "Impact Exceedance Curve",
-                                'y':0.9,
-                                'x':0.5,
-                                'xanchor': 'center',
-                                'yanchor': 'top'},
-                        xaxis_title="Impact",
-                        yaxis_title="Impact exceedance probability")                 
-        fig.show()
-
+        return {
+            "risk_ids": self.risk_ids,
+            "mean_frequency": self.mean_frequency,
+            "mean_impact": self.mean_impact,
+            "mean_expected_loss": self.mean_expected_loss,
+            "top_ids": [self.risk_ids[i] for i in top_idx],
+            "top_losses": self.mean_expected_loss[top_idx],
+            "heatmap_x": self.mean_frequency[top_idx],
+            "heatmap_y": self.mean_impact[top_idx],
+            "uncertainty": self.uncertainty[top_idx],
+            "top_n": top_n,
+        }
