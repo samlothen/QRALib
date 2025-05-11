@@ -4,7 +4,7 @@
 from QRALib.risk.portfolio import RiskPortfolio
 from QRALib.utils.importer import RiskDataImporter
 from QRALib.api import simulate, SimulationResults
-
+import json
 # Replace with your actual file path
 data_file = "./test_data_18.csv"
 
@@ -16,6 +16,9 @@ print("Loaded risk IDs:", portfolio.ids())
 # 2. Run a simulation step-by-step via the new simulate() API
 sim = simulate(data_file, method="smc", iterations=10000)
 payload = sim.to_json()   # no more AttributeError
+json_str = json.dumps(payload)
+with open("simulation_results.json", "w") as f:
+    json.dump(payload, f)
 sim2 = SimulationResults.from_json(payload)
 print(sim2.results.keys())  # should be the risk IDs
 # You can also access the raw arrays:

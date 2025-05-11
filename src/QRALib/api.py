@@ -13,36 +13,64 @@ class SimulationResults:
     results: Dict[str, Any]
 
     def to_json(self) -> Dict[str, Any]:
-        def _convert(v):
-            return v.tolist() if isinstance(v, np.ndarray) else v
-        summary_json = {k: _convert(v) for k, v in self.summary.items()}
-        results_json = {
-            rid: {field: _convert(arr) for field, arr in data.items()}
-            for rid, data in self.results.items()
+        """
+        Convert this SimulationResults into a JSON-serializable dict.
+        Walks through nested dicts/lists, converting any np.ndarray via .tolist().
+        """
+        def _serialize(obj):
+            # base case: NumPy array → list
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+            # dict → serialize each key/value
+            if isinstance(obj, dict):
+                return {k: _serialize(v) for k, v in obj.items()}
+            # list or tuple → serialize each element
+            if isinstance(obj, (list, tuple)):
+                return [_serialize(v) for v in obj]
+            # everything else (int, float, str, None) is safe as-is
+            return obj
+
+        return {
+            "summary": _serialize(self.summary),
+            "results": _serialize(self.results),
         }
-        return {"summary": summary_json, "results": results_json}
 
     @classmethod
-    def from_json(cls: Type[T], data: Dict[str, Any]) -> T:
-        def _rebuild(v):
-            return np.array(v) if isinstance(v, list) else v
-        summary = {k: _rebuild(v) for k, v in data["summary"].items()}
-        results = {
-            rid: {f: _rebuild(arr) for f, arr in rd.items()}
-            for rid, rd in data["results"].items()
-        }
+    def from_json(cls, data: Dict[str, Any]) -> "SimulationResults":
+        def _rebuild(obj):
+            if isinstance(obj, dict):
+                return {k: _rebuild(v) for k, v in obj.items()}
+            if isinstance(obj, list):
+                # try array, otherwise list of mixed types
+                try:
+                    return np.array(obj)
+                except:
+                    return [_rebuild(v) for v in obj]
+            return obj
+
+        summary = _rebuild(data["summary"])
+        results = _rebuild(data["results"])
         return cls(summary=summary, results=results)
+
 
 
 def simulate(source: str, method: str, iterations: int) -> SimulationResults:
     pipe = QRAPipeline(source, method, iterations)
-    raw = pipe.run_simulation()      # raw["results"] is a list of dicts
-    # Turn list-of-dicts into dict[risk_id → data-dict]
-    results_by_id = {
-        r["id"]: {k: v for k, v in r.items() if k != "id"}
-        for r in raw["results"]
+    raw = pipe.run_simulation()  # raw["summary"]["risk_list"] is a RiskPortfolio
+
+    # build a clean summary
+    summary = {
+        "number_of_iterations": raw["summary"]["number_of_iterations"],
+        "risk_ids": raw["summary"]["risk_list"].ids(),   # just the list of IDs
+        "method": method,
+        # any other metadata you want...
     }
-    return SimulationResults(summary=raw["summary"], results=results_by_id)
+
+    # convert results list→dict by ID (as we discussed earlier)
+    results_by_id = { r["id"]: {k:v for k,v in r.items() if k!="id"}
+                      for r in raw["results"] }
+
+    return SimulationResults(summary=summary, results=results_by_id)
 
 
 def run_full_qra(
