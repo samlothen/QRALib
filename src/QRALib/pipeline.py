@@ -4,22 +4,22 @@ import os
 
 from .utils.importer import RiskDataImporter
 from .risk import RiskPortfolio
-from .simulation.smc import MonteCarloSimulation
+from .simulation.smc import StandardMonteCarlo
 from .simulation.qmc import QuasiMonteCarlo
 from .simulation.rmc import RandomQuasiMonteCarlo
-from .analysis.mariq import MaRiQ
+from .analysis.mariq import MaRiQAnalysis
 from .analysis.sensitivity_analysis import SensitivityAnalysis
-from .analysis.tornado import Tornado
+from .analysis.tornado import TornadoAnalysis
 from .analysis.single_risk_analysis import SingleRiskAnalysis
 
 SIMULATORS = {
-    "smc": MonteCarloSimulation,
+    "smc": StandardMonteCarlo,
     "qmc": QuasiMonteCarlo,
     "rqmc": RandomQuasiMonteCarlo,
 }
 
 class QRAPipeline:
-    def __init__(self, source: str, method: str = "mcs", iterations: int = 10000):
+    def __init__(self, source: str, method: str = "smc", iterations: int = 10000):
         self.source = source
         self.method = method
         self.iterations = iterations

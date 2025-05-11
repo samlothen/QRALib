@@ -13,12 +13,12 @@ finally:
 # — public API exports —
 from .utils.importer           import RiskDataImporter
 from .risk.portfolio           import RiskPortfolio
-from .simulation.smc           import MonteCarloSimulation
+from .simulation.smc           import StandardMonteCarlo
 from .simulation.qmc           import QuasiMonteCarlo
 from .simulation.rmc           import RandomQuasiMonteCarlo
-from .analysis.mariq           import MaRiQ
+from .analysis.mariq           import MaRiQAnalysis
 from .analysis.sensitivity_analysis import SensitivityAnalysis
-from .analysis.tornado         import Tornado
+from .analysis.tornado         import TornadoAnalysis
 from .analysis.single_risk_analysis import SingleRiskAnalysis
 from .pipeline                 import QRAPipeline
 from .api                      import run_full_qra
@@ -26,12 +26,12 @@ from .api                      import run_full_qra
 __all__ = [
     "RiskDataImporter",
     "RiskPortfolio",
-    "MonteCarloSimulation",
+    "StandardMonteCarlo",
     "QuasiMonteCarlo",
     "RandomQuasiMonteCarlo",
-    "MaRiQ",
+    "MaRiQAnalysis",
     "SensitivityAnalysis",
-    "Tornado",
+    "TornadoAnalysis",
     "SingleRiskAnalysis",
     "QRAPipeline",
     "run_full_qra",

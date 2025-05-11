@@ -10,7 +10,7 @@ from numpy.random import poisson as poisson
 import multiprocessing
 from joblib import Parallel, delayed
 
-class MonteCarloSimulation:
+class StandardMonteCarlo:
 
     def __init__(self, risk_list):
         """:param  risk_list = list of the risks to simulate

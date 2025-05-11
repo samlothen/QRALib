@@ -14,7 +14,7 @@ portfolio = RiskPortfolio(risks)
 print("Loaded risk IDs:", portfolio.ids())
 
 # 2. Run a simulation step-by-step
-pipeline = QRAPipeline(data_file, method="mcs", iterations=10000)
+pipeline = QRAPipeline(data_file, method="smc", iterations=10000)
 results = pipeline.run_simulation()
 print("Simulation summary:", results["summary"])
 
