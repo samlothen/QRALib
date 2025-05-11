@@ -21,7 +21,7 @@ print("Simulation summary:", results["summary"])
 # 3. Use the one-line API for full analysis and single-risk output
 full_results = run_full_qra(
     data_file,
-    method="mcs",
+    method="smc",
     iterations=5000,
     single_risk_idx=0
 )

@@ -4,7 +4,7 @@ from .pipeline import QRAPipeline
 
 def run_full_qra(
     source: str,
-    method: str = "mcs",
+    method: str = "smc",
     iterations: int = 10000,
     tolerance=None,
     morris: int = 1000,

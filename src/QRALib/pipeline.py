@@ -13,7 +13,7 @@ from .analysis.tornado import Tornado
 from .analysis.single_risk_analysis import SingleRiskAnalysis
 
 SIMULATORS = {
-    "mcs": MonteCarloSimulation,
+    "smc": MonteCarloSimulation,
     "qmc": QuasiMonteCarlo,
     "rqmc": RandomQuasiMonteCarlo,
 }
