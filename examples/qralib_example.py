@@ -1,20 +1,22 @@
 # minimal_qralib_test.py
 # Minimal example to verify QRALib works with your existing files
-
-from QRALib.risk.portfolio import RiskPortfolio
 from QRALib.utils.importer import RiskDataImporter
+from QRALib.risk.portfolio   import RiskPortfolio
 from QRALib.api import simulate, SimulationResults
 import json
-# Replace with your actual file path
 data_file = "./test_data_18.csv"
 
-# 1. Import risks and build a portfolio
+# 1) Import risks and build a portfolio
 risks = RiskDataImporter.import_risks(data_file)
 portfolio = RiskPortfolio(risks)
 print("Loaded risk IDs:", portfolio.ids())
 
+# 2) Run a simulation step-by-step via the new simulate() API
+#    NOTE: pass the list of Risk objects, *not* the file path here
+sim = simulate(risks, method="smc", iterations=10000)
+print("Simulation summary:", sim.summary)
+
 # 2. Run a simulation step-by-step via the new simulate() API
-sim = simulate(data_file, method="smc", iterations=10000)
 payload = sim.to_json()   # no more AttributeError
 json_str = json.dumps(payload)
 with open("simulation_results.json", "w") as f:
