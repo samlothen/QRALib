@@ -402,6 +402,20 @@ Run simulation 5. Run analysis 6. Run sensitivity analysis
 ### mariq
 
 ```
+from QRALib.api import simulate, analyze_mariq
+
+# 1) Run the sim
+sim = simulate(risks, method="mcs", iterations=10000)
+
+# 2) Immediately analyze MaRiQ
+tolerance = ([0, 600000, 1_000_000], [100, 90, 0])
+result = analyze_mariq(sim, tolerance)
+
+# result["total"] is the exceedance curve dict
+# result["single"] is the single-risk analysis dict
+```
+
+```
 from QRALib.analysis.mariq import MaRiQAnalysis
 from QRALib.viz.mariq      import plot_total_risk, plot_single_risk
 

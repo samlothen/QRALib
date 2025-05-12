@@ -3,7 +3,7 @@
 from QRALib.utils.importer import RiskDataImporter
 from QRALib.risk.portfolio   import RiskPortfolio
 from QRALib.api import simulate, SimulationResults
-import json
+import json, gzip
 data_file = "./test_data_18.csv"
 
 # 1) Import risks and build a portfolio
@@ -20,6 +20,8 @@ print("Simulation summary:", sim.summary)
 payload = sim.to_json()   # no more AttributeError
 json_str = json.dumps(payload)
 with open("simulation_results.json", "w") as f:
+    json.dump(payload, f)
+with gzip.open("sim_results.json.gz", "wt", encoding="utf-8") as f:
     json.dump(payload, f)
 sim2 = SimulationResults.from_json(payload)
 print(sim2.results.keys())  # should be the risk IDs

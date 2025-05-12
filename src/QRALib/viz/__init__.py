@@ -1,8 +1,8 @@
 # src/QRALib/viz/__init__.py
 
 from .mariq         import plot_total_risk, plot_single_risk        # MaRiQ charts
-from .sensitivity   import plot_morris, plot_sobol                  # Sensitivity tables
-from .single_risk   import plot_single_risk as plot_risk_details    # Single‐risk chart
+from .sensitivity_analysis   import plot_morris, plot_sobol                  # Sensitivity tables
+from .single_risk_analysis   import plot_single_risk as plot_risk_details    # Single‐risk chart
 from .tornado       import (
     plot_tornado,
     plot_ale_variation,

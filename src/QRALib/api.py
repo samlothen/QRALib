@@ -1,18 +1,20 @@
 # src/QRALib/api.py
-# ---------------
 from .pipeline import QRAPipeline
 from dataclasses import dataclass
-from typing import Dict, Any, Type, TypeVar, Optional
+from typing import Dict, Any, Type, TypeVar, Optional, List, Literal, Tuple
 import numpy as np
-from typing import List, Literal
+
 from .risk.portfolio    import RiskPortfolio, Risk
 from .simulation.smc    import StandardMonteCarlo
 from .simulation.qmc    import QuasiMonteCarlo
 from .simulation.rmc    import RandomQuasiMonteCarlo
-#from .api               import SimulationResults
+from .analysis.mariq    import MaRiQAnalysis
+from .analysis.sensitivity_analysis import SensitivityAnalysis
+from .analysis.single_risk_analysis import SingleRiskAnalysis
+from .analysis.tornado    import TornadoAnalysis
 
-Method = Literal["smc", "qmc", "rmc"]
 
+Method = Literal["smc", "qmc", "rqmc"]
 T = TypeVar("T", bound="SimulationResults")
 
 @dataclass
@@ -172,3 +174,160 @@ def run_full_qra(
         }
 
     return sim_res
+
+
+
+def analyze_mariq(
+    sim: SimulationResults,
+    tolerance: Tuple[List[float], List[float]]
+) -> Dict[str, Any]:
+    """
+    Run MaRiQ analysis on a SimulationResults object.
+
+    Parameters
+    ----------
+    sim : SimulationResults
+        The result of simulate(...).
+    tolerance : Tuple[List[float], List[float]]
+        User‐specified risk tolerance (x_values, y_percentages).
+
+    Returns
+    -------
+    Dict[str, Any]
+        {
+          "total": <output of compute_total()>,
+          "single": <output of compute_single()>
+        }
+    """
+    # 1) Rebuild the raw dict shape for MaRiQAnalysis
+    raw = {
+        "summary": {
+            "number_of_iterations": sim.summary["number_of_iterations"],
+            # we no longer pass a RiskPortfolio here
+        },
+        "results": [
+            {"id": rid, **{k: v for k, v in data.items()}}
+            for rid, data in sim.results.items()
+        ]
+    }
+
+    # 2) Delegate to the pure‐data MaRiQAnalysis
+    ma = MaRiQAnalysis(raw, tolerance)
+
+    # 3) Return both total‐risk and single‐risk data
+    return {
+        "total": ma.compute_total(),
+        "single": ma.compute_single()
+    }
+
+def compute_morris(
+    risks: List[Risk],
+    N: int = 1000,
+    num_levels: int = 4
+) -> Dict[str, Any]:
+    """
+    Compute Morris sensitivity indices for a list of Risk objects.
+
+    Parameters
+    ----------
+    risks : List[Risk]
+        The original Risk instances used in simulate().
+    N : int
+        Number of trajectories / samples (default 1000).
+    num_levels : int
+        Number of grid levels for Morris (default 4).
+
+    Returns
+    -------
+    Dict[str, Any]
+        SALib result dict containing keys 'names','mu_star','mu_star_conf','sigma'.
+    """
+    sa = SensitivityAnalysis(risks)
+    return sa.morris_indices(N=N, num_levels=num_levels)
+
+
+def compute_sobol(
+    risks: List[Risk],
+    N: int = 1024
+) -> Dict[str, Any]:
+    """
+    Compute Sobol sensitivity indices for a list of Risk objects.
+
+    Parameters
+    ----------
+    risks : List[Risk]
+        The original Risk instances used in simulate().
+    N : int
+        Number of base samples (must be a power of 2, default 1024).
+
+    Returns
+    -------
+    Dict[str, Any]
+        SALib result dict containing keys 'names','S1','S1_conf','ST','ST_conf'.
+    """
+    sa = SensitivityAnalysis(risks)
+    return sa.sobol_indices(N=N)
+
+
+def compute_single_risk(
+    sim: SimulationResults,
+    risk_id: str,
+    num_bins: int = 100
+) -> Dict[str, Any]:
+    """
+    Compute summary stats and exceedance for a single risk.
+
+    Parameters
+    ----------
+    sim : SimulationResults
+        The object returned by `simulate()`.
+    risk_id : str
+        The ID of the risk to analyze.
+    num_bins : int, optional
+        Number of bins for the exceedance curve (default 100).
+
+    Returns
+    -------
+    Dict[str, Any]
+        {
+          "stats":    output of SingleRiskAnalysis.compute_stats,
+          "exceedance": output of SingleRiskAnalysis.compute_exceedance
+        }
+    """
+    # 1) Rebuild the raw dict shape SingleRiskAnalysis expects
+    raw = {
+        "summary": {
+            "number_of_iterations": sim.summary["number_of_iterations"]
+        },
+        "results": [
+            {"id": rid, **data}
+            for rid, data in sim.results.items()
+        ]
+    }
+
+    # 2) Instantiate & find the index for our risk_id
+    sra = SingleRiskAnalysis(raw)
+    # build a map from id → index
+    id_list = [r["id"] for r in raw["results"]]
+    try:
+        idx = id_list.index(risk_id)
+    except ValueError:
+        raise KeyError(f"Risk ID {risk_id!r} not found in SimulationResults")
+
+    # 3) Compute stats & exceedance
+    stats      = sra.compute_stats(idx)
+    exceedance = sra.compute_exceedance(idx, num_bins=num_bins)
+
+    return {"stats": stats, "exceedance": exceedance}
+
+
+def compute_tornado(
+    sim: SimulationResults,
+    attribute: str
+    ) -> Dict[str, Any]:
+    """
+    Compute Tornado variation for a given attribute ('single_risk_impact', 'frequency', 'total').
+    """
+    raw = {"results": [{"id": rid, **data} for rid, data in sim.results.items()]}
+    ta = TornadoAnalysis(raw)
+    return ta.compute_variation(attribute)

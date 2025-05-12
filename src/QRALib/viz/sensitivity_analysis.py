@@ -1,4 +1,5 @@
 # src/QRALib/viz/sensitivity.py
+import numpy as np
 import plotly.graph_objects as go
 from typing import Dict, Any
 

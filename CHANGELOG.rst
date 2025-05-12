@@ -12,5 +12,5 @@ Version 0.2
 ===========
 
 - Renamed QRACLib to QRALib
-- Renamed functions to new name standard 
+- Renamed functions to new name standard
 - Corrected spelling issues
