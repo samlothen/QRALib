@@ -5,7 +5,7 @@ from QRALib.utils.importer import RiskDataImporter
 # 1) Run the sim (pass in your list of Risk objects)
 #    If you only have a file, first do:
 #      from QRALib.utils.importer import RiskDataImporter
-risks = RiskDataImporter.import_risks("./test_data_18.csv")
+risks = RiskDataImporter.import_risks("/Users/sam/projects/QRALib/examples/test_data_18.csv")
 #    then:
 #      sim = simulate(risks, method="mcs", iterations=10000)
 

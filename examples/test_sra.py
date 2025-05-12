@@ -3,7 +3,7 @@ from QRALib.utils.importer      import RiskDataImporter
 from QRALib.viz.single_risk_analysis     import plot_single_risk
 
 # load & simulate
-risks = RiskDataImporter.import_risks("./test_data_18.csv")
+risks = RiskDataImporter.import_risks("/Users/sam/projects/QRALib/examples/test_data_18.csv")
 sim   = simulate(risks, method="smc", iterations=10000)
 
 # compute & plot for one risk

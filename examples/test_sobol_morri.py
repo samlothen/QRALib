@@ -3,7 +3,7 @@ from QRALib.utils.importer     import RiskDataImporter
 from QRALib.viz.sensitivity_analysis    import plot_morris, plot_sobol
 
 # 1) Load your risks & simulate
-risks = RiskDataImporter.import_risks("./test_data_18.csv")
+risks = RiskDataImporter.import_risks("/Users/sam/projects/QRALib/examples/test_data_18.csv")
 sim   = simulate(risks, method="smc", iterations=10000)
 
 # 2) Compute sensitivity indices

@@ -3,7 +3,7 @@ from QRALib.utils.importer      import RiskDataImporter
 from QRALib.viz.tornado   import plot_tornado, plot_ale_variation
 
 # load & simulate
-risks = RiskDataImporter.import_risks("./test_data_18.csv")
+risks = RiskDataImporter.import_risks("/Users/sam/projects/QRALib/examples/test_data_18.csv")
 sim = simulate(risks, method="smc", iterations=10000)
 
 # single-attribute tornado

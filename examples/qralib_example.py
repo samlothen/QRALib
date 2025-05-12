@@ -4,7 +4,7 @@ from QRALib.utils.importer import RiskDataImporter
 from QRALib.risk.portfolio   import RiskPortfolio
 from QRALib.api import simulate, SimulationResults
 import json, gzip
-data_file = "./test_data_18.csv"
+data_file = "/Users/sam/projects/QRALib/examples/test_data_18.csv"
 
 # 1) Import risks and build a portfolio
 risks = RiskDataImporter.import_risks(data_file)
